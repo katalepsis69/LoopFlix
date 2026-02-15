@@ -1,84 +1,207 @@
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Website</title>
-  <link rel="stylesheet" href="css/home.css">
-  <link rel="preload" href="css/home.css" as="style">
-  <link rel="preload" href="js/home.js" as="script">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LoopFlix — Stream trending movies, TV shows, and anime for free." />
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self';
+    style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline';
+    font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com;
+    img-src 'self' https://image.tmdb.org data:;
+    connect-src https://api.themoviedb.org;
+    frame-src https://vidsrc.cc https://vidsrc.net https://player.videasy.net;
+  " />
+  <title>LoopFlix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/home.css" />
   <script defer src="js/home.js"></script>
 </head>
 
 <body>
-  <div class="navbar">
-    <img src="logo.png" alt="LOGO HERE" />
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <input type="text" class="search-bar" placeholder="Search..." onfocus="openSearchModal()" />
+  <!-- Skip Navigation -->
+  <a href="#main-content" class="skip-link">Skip to content</a>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-brand">
+      <span class="logo-text">Loop<span class="logo-accent">Flix</span></span>
     </div>
-  </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link active">
+        <i class="fas fa-home"></i> Home
+      </a>
+      <div class="search-trigger" id="search-trigger">
+        <i class="fas fa-search"></i>
+        <span>Search...</span>
+      </div>
+    </div>
+  </nav>
 
-  <div class="banner" id="banner">
-    <h1 id="banner-title"></h1>
-  </div>
+  <!-- Main Content -->
+  <main id="main-content">
 
-  <div class="row">
-    <h2>Trending Movies</h2>
-    <div class="list" id="movies-list"></div>
-  </div>
+    <!-- Hero Banner -->
+    <section class="banner" id="banner" aria-label="Featured content">
+      <div class="banner-overlay"></div>
+      <div class="banner-content">
+        <h1 id="banner-title" class="banner-title"></h1>
+        <p id="banner-overview" class="banner-overview"></p>
+        <button class="banner-btn" id="banner-btn">
+          <i class="fas fa-play"></i> Watch Now
+        </button>
+      </div>
+    </section>
 
-  <div class="row">
-    <h2>Trending TV Shows</h2>
-    <div class="list" id="tvshows-list"></div>
-  </div>
+    <!-- Content Rows -->
+    <section class="row" aria-label="Trending Movies">
+      <h2><i class="fas fa-fire"></i> Trending Movies</h2>
+      <div class="list-wrapper">
+        <button class="scroll-btn scroll-left" aria-label="Scroll left" data-target="movies-list">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="list" id="movies-list">
+          <div class="skeleton-row" aria-hidden="true">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        </div>
+        <button class="scroll-btn scroll-right" aria-label="Scroll right" data-target="movies-list">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
 
-  <div class="row">
-    <h2>Trending Anime</h2>
-    <div class="list" id="anime-list"></div>
-  </div>
+    <section class="row" aria-label="Trending TV Shows">
+      <h2><i class="fas fa-tv"></i> Trending TV Shows</h2>
+      <div class="list-wrapper">
+        <button class="scroll-btn scroll-left" aria-label="Scroll left" data-target="tvshows-list">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="list" id="tvshows-list">
+          <div class="skeleton-row" aria-hidden="true">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        </div>
+        <button class="scroll-btn scroll-right" aria-label="Scroll right" data-target="tvshows-list">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
 
-  <div class="modal" id="modal">
+    <section class="row" aria-label="Trending Anime">
+      <h2><i class="fas fa-dragon"></i> Trending Anime</h2>
+      <div class="list-wrapper">
+        <button class="scroll-btn scroll-left" aria-label="Scroll left" data-target="anime-list">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="list" id="anime-list">
+          <div class="skeleton-row" aria-hidden="true">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        </div>
+        <button class="scroll-btn scroll-right" aria-label="Scroll right" data-target="anime-list">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Detail Modal -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
     <div class="modal-content">
-      <span class="close" onclick="closeModal()" style="color: red;">&times;</span>
+      <button class="close" id="modal-close" aria-label="Close modal">
+        <i class="fas fa-times"></i>
+      </button>
       <div class="modal-body">
-  <img id="modal-image" src="" alt="" />
-  <div class="modal-text">
-    <h2 id="modal-title"></h2>
-    <div class="stars" id="modal-rating"></div>
-    <p id="modal-description"></p>
-  </div>
-</div>
-      
+        <img id="modal-image" src="" alt="" />
+        <div class="modal-text">
+          <h2 id="modal-title"></h2>
+          <div class="stars" id="modal-rating" aria-label="Rating"></div>
+          <p id="modal-description"></p>
+        </div>
+      </div>
       <div class="server-selector">
-        <label for="server">Change Server:</label>
-        <select id="server" onchange="changeServer()">
+        <label for="server">
+          <i class="fas fa-server"></i> Server:
+        </label>
+        <select id="server">
           <option value="vidsrc.cc">Vidsrc.cc</option>
           <option value="vidsrc.me">Vidsrc.me</option>
           <option value="player.videasy.net">Player.Videasy.net</option>
         </select>
       </div>
-      <iframe id="modal-video" width="100%" height="315" frameborder="0" allowfullscreen></iframe>
+      <div class="video-container">
+        <iframe id="modal-video" width="100%" height="100%" frameborder="0" allowfullscreen
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      </div>
     </div>
   </div>
 
-  <div class="search-modal" id="search-modal">
-    <span class="close" onclick="closeSearchModal()" style="color: red;">&times;</span>
-    <input type="text" id="search-input" placeholder="Search for a movie or show..." oninput="searchTMDB()" />
-    <div class="results" id="search-results"></div>
-  </div>
-
-<footer class="footer">
-  <div class="footer-content">
-    <p>&copy; 2025 My Website. All rights reserved.</p>
-    <div class="footer-links">
-      <a href="#">Disclaimer</a>
-      <a href="#">About Us</a>
-      <a href="#">Contact Us</a>
+  <!-- Search Modal -->
+  <div class="search-modal" id="search-modal" role="dialog" aria-modal="true" aria-label="Search">
+    <button class="close" id="search-close" aria-label="Close search">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="search-inner">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="search-input" placeholder="Search movies, shows, anime..." autocomplete="off" />
+      </div>
+      <div class="results" id="search-results"></div>
     </div>
   </div>
-</footer>
 
-  
+  <!-- Back to Top -->
+  <button class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <span class="footer-logo">Loop<span class="logo-accent">Flix</span></span>
+      <p>&copy; 2025 LoopFlix. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#">Disclaimer</a>
+        <a href="#">About Us</a>
+        <a href="#">Contact Us</a>
+      </div>
+      <p class="footer-note">Data provided by <a href="https://www.themoviedb.org/" target="_blank"
+          rel="noopener noreferrer">TMDB</a></p>
+    </div>
+  </footer>
+
 </body>
+
+</html>
