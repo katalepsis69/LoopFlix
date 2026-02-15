@@ -12,7 +12,7 @@
     font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com;
     img-src 'self' https://image.tmdb.org data:;
     connect-src https://api.themoviedb.org;
-    frame-src https://vidsrc.cc https://vidsrc.net https://player.videasy.net;
+    frame-src https://vidsrc.cc https://vidsrc.net https://player.videasy.net https://player.autoembed.cc https://embed.su https://www.2embed.cc https://vidsrc.xyz https://multiembed.mov https://moviesapi.club https://player.smashy.stream https://www.nontongo.win;
   " />
   <title>LoopFlix</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -153,9 +153,26 @@
           <i class="fas fa-server"></i> Server:
         </label>
         <select id="server">
-          <option value="vidsrc.cc">Vidsrc.cc</option>
-          <option value="vidsrc.me">Vidsrc.me</option>
-          <option value="player.videasy.net">Player.Videasy.net</option>
+          <optgroup label="⭐ Full HD (1080p)">
+            <option value="player.videasy.net">Videasy</option>
+            <option value="autoembed">AutoEmbed</option>
+            <option value="embedsu">Embed.su</option>
+            <option value="vidsrc.cc">VidSrc.cc</option>
+          </optgroup>
+          <optgroup label="🎬 HD (720p)">
+            <option value="2embed">2Embed</option>
+            <option value="vidsrc.xyz">VidSrc.xyz</option>
+            <option value="multiembed">MultiEmbed</option>
+          </optgroup>
+          <optgroup label="📺 Multi-Quality (Auto)">
+            <option value="vidsrc.me">VidSrc.me</option>
+            <option value="moviesapi">MoviesAPI</option>
+            <option value="smashystream">SmashyStream</option>
+          </optgroup>
+          <optgroup label="🔄 Backup Servers">
+            <option value="superembed">SuperEmbed</option>
+            <option value="nontongo">NontonGo</option>
+          </optgroup>
         </select>
       </div>
       <div class="video-container">

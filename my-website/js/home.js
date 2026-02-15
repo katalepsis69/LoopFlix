@@ -172,24 +172,32 @@
     document.body.style.overflow = 'hidden';
   }
 
+  // Server embed URL configurations
+  const SERVERS = {
+    // Full HD (1080p)
+    'player.videasy.net': (type, id) => `https://player.videasy.net/${type}/${id}`,
+    'autoembed': (type, id) => `https://player.autoembed.cc/embed/${type}/${id}`,
+    'embedsu': (type, id) => `https://embed.su/embed/${type}/${id}`,
+    'vidsrc.cc': (type, id) => `https://vidsrc.cc/v2/embed/${type}/${id}`,
+    // HD (720p)
+    '2embed': (type, id) => `https://www.2embed.cc/embed/${id}`,
+    'vidsrc.xyz': (type, id) => `https://vidsrc.xyz/embed/${type}/${id}`,
+    'multiembed': (type, id) => `https://multiembed.mov/?video_id=${id}&tmdb=1`,
+    // Multi-Quality (Auto)
+    'vidsrc.me': (type, id) => `https://vidsrc.net/embed/${type}/?tmdb=${id}`,
+    'moviesapi': (type, id) => `https://moviesapi.club/${type}/${id}`,
+    'smashystream': (type, id) => `https://player.smashy.stream/${type}/${id}`,
+    // Backup
+    'superembed': (type, id) => `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`,
+    'nontongo': (type, id) => `https://www.nontongo.win/embed/${type}/${id}`,
+  };
+
   function changeServer() {
     if (!currentItem) return;
     const server = document.getElementById('server').value;
     const type = currentItem.media_type === 'movie' ? 'movie' : 'tv';
-    let embedURL = '';
-
-    switch (server) {
-      case 'vidsrc.cc':
-        embedURL = `https://vidsrc.cc/v2/embed/${type}/${currentItem.id}`;
-        break;
-      case 'vidsrc.me':
-        embedURL = `https://vidsrc.net/embed/${type}/?tmdb=${currentItem.id}`;
-        break;
-      case 'player.videasy.net':
-        embedURL = `https://player.videasy.net/${type}/${currentItem.id}`;
-        break;
-    }
-
+    const getURL = SERVERS[server];
+    const embedURL = getURL ? getURL(type, currentItem.id) : '';
     document.getElementById('modal-video').src = embedURL;
   }
 
