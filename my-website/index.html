@@ -12,7 +12,7 @@
     font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com;
     img-src 'self' https://image.tmdb.org data:;
     connect-src https://api.themoviedb.org;
-    frame-src https://vidsrc.cc https://vidsrc.net https://player.videasy.net https://player.autoembed.cc https://embed.su https://www.2embed.cc https://vidsrc.xyz https://multiembed.mov https://moviesapi.club https://player.smashy.stream https://www.nontongo.win;
+    frame-src https://www.vidking.net https://www.youtube.com https://www.youtube-nocookie.com;
   " />
   <title>LoopFlix</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,18 +28,19 @@
   <a href="#main-content" class="skip-link">Skip to content</a>
 
   <!-- Navbar -->
-  <nav class="navbar" role="navigation" aria-label="Main navigation">
+  <nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
     <div class="nav-brand">
       <span class="logo-text">Loop<span class="logo-accent">Flix</span></span>
     </div>
     <div class="nav-links">
-      <a href="index.html" class="nav-link active">
-        <i class="fas fa-home"></i> Home
-      </a>
+      <a href="index.html" class="nav-link active"><i class="fas fa-home"></i> Home</a>
       <div class="search-trigger" id="search-trigger">
-        <i class="fas fa-search"></i>
-        <span>Search...</span>
+        <i class="fas fa-search"></i><span>Search...</span>
       </div>
+      <button class="nav-user" id="nav-user" aria-label="User account">
+        <i class="fas fa-user"></i>
+        <span id="nav-username"></span>
+      </button>
     </div>
   </nav>
 
@@ -51,10 +52,16 @@
       <div class="banner-overlay"></div>
       <div class="banner-content">
         <h1 id="banner-title" class="banner-title"></h1>
+        <div class="banner-meta" id="banner-meta">
+          <span class="meta-badge"><i class="fas fa-star"></i> <span id="banner-rating"></span></span>
+          <span class="meta-badge"><i class="far fa-calendar"></i> <span id="banner-year"></span></span>
+          <span class="genre-tag" id="banner-genre"></span>
+        </div>
         <p id="banner-overview" class="banner-overview"></p>
-        <button class="banner-btn" id="banner-btn">
-          <i class="fas fa-play"></i> Watch Now
-        </button>
+        <div class="banner-actions">
+          <button class="btn-play" id="banner-play"><i class="fas fa-play"></i> Play</button>
+          <button class="btn-explore" id="banner-explore"><i class="fas fa-info-circle"></i> Explore More</button>
+        </div>
       </div>
     </section>
 
@@ -62,9 +69,8 @@
     <section class="row" aria-label="Trending Movies">
       <h2><i class="fas fa-fire"></i> Trending Movies</h2>
       <div class="list-wrapper">
-        <button class="scroll-btn scroll-left" aria-label="Scroll left" data-target="movies-list">
-          <i class="fas fa-chevron-left"></i>
-        </button>
+        <button class="scroll-btn scroll-left" aria-label="Scroll left" data-target="movies-list"><i
+            class="fas fa-chevron-left"></i></button>
         <div class="list" id="movies-list">
           <div class="skeleton-row" aria-hidden="true">
             <div class="skeleton-card"></div>
@@ -77,18 +83,16 @@
             <div class="skeleton-card"></div>
           </div>
         </div>
-        <button class="scroll-btn scroll-right" aria-label="Scroll right" data-target="movies-list">
-          <i class="fas fa-chevron-right"></i>
-        </button>
+        <button class="scroll-btn scroll-right" aria-label="Scroll right" data-target="movies-list"><i
+            class="fas fa-chevron-right"></i></button>
       </div>
     </section>
 
     <section class="row" aria-label="Trending TV Shows">
       <h2><i class="fas fa-tv"></i> Trending TV Shows</h2>
       <div class="list-wrapper">
-        <button class="scroll-btn scroll-left" aria-label="Scroll left" data-target="tvshows-list">
-          <i class="fas fa-chevron-left"></i>
-        </button>
+        <button class="scroll-btn scroll-left" aria-label="Scroll left" data-target="tvshows-list"><i
+            class="fas fa-chevron-left"></i></button>
         <div class="list" id="tvshows-list">
           <div class="skeleton-row" aria-hidden="true">
             <div class="skeleton-card"></div>
@@ -101,18 +105,16 @@
             <div class="skeleton-card"></div>
           </div>
         </div>
-        <button class="scroll-btn scroll-right" aria-label="Scroll right" data-target="tvshows-list">
-          <i class="fas fa-chevron-right"></i>
-        </button>
+        <button class="scroll-btn scroll-right" aria-label="Scroll right" data-target="tvshows-list"><i
+            class="fas fa-chevron-right"></i></button>
       </div>
     </section>
 
     <section class="row" aria-label="Trending Anime">
       <h2><i class="fas fa-dragon"></i> Trending Anime</h2>
       <div class="list-wrapper">
-        <button class="scroll-btn scroll-left" aria-label="Scroll left" data-target="anime-list">
-          <i class="fas fa-chevron-left"></i>
-        </button>
+        <button class="scroll-btn scroll-left" aria-label="Scroll left" data-target="anime-list"><i
+            class="fas fa-chevron-left"></i></button>
         <div class="list" id="anime-list">
           <div class="skeleton-row" aria-hidden="true">
             <div class="skeleton-card"></div>
@@ -125,68 +127,99 @@
             <div class="skeleton-card"></div>
           </div>
         </div>
-        <button class="scroll-btn scroll-right" aria-label="Scroll right" data-target="anime-list">
-          <i class="fas fa-chevron-right"></i>
-        </button>
+        <button class="scroll-btn scroll-right" aria-label="Scroll right" data-target="anime-list"><i
+            class="fas fa-chevron-right"></i></button>
       </div>
     </section>
 
   </main>
 
-  <!-- Detail Modal -->
-  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-backdrop" id="modal-backdrop"></div>
-    <div class="modal-content">
-      <button class="close" id="modal-close" aria-label="Close modal">
-        <i class="fas fa-times"></i>
-      </button>
-      <div class="modal-body">
-        <img id="modal-image" src="" alt="" />
-        <div class="modal-text">
-          <h2 id="modal-title"></h2>
-          <div class="stars" id="modal-rating" aria-label="Rating"></div>
-          <p id="modal-description"></p>
+  <!-- ============================================ -->
+  <!--  EXPLORE VIEW (Full-Page Cinematic Detail)   -->
+  <!-- ============================================ -->
+  <div class="explore-view" id="explore-view" aria-hidden="true">
+    <!-- Hero: trailer background -->
+    <div class="explore-hero">
+      <div class="explore-trailer-wrap" id="explore-trailer-wrap">
+        <iframe id="explore-trailer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <img id="explore-fallback-bg" alt="" />
+      </div>
+      <div class="explore-gradient"></div>
+
+      <!-- Top controls -->
+      <button class="explore-back" id="explore-back" aria-label="Go back"><i class="fas fa-arrow-left"></i></button>
+      <button class="explore-mute" id="explore-mute" aria-label="Toggle mute"><i
+          class="fas fa-volume-xmark"></i></button>
+
+      <!-- Hero content -->
+      <div class="explore-hero-content">
+        <h1 id="explore-title"></h1>
+        <div class="explore-meta">
+          <span class="meta-badge"><i class="far fa-calendar"></i> <span id="explore-year"></span></span>
+          <span class="meta-badge"><i class="far fa-clock"></i> <span id="explore-runtime"></span></span>
+          <span class="meta-badge star-badge"><i class="fas fa-star"></i> <span id="explore-rating"></span></span>
+        </div>
+        <div class="explore-genres" id="explore-genres"></div>
+        <p class="explore-overview" id="explore-overview"></p>
+        <div class="explore-actions">
+          <button class="btn-play" id="explore-play"><i class="fas fa-play"></i> Play</button>
+          <button class="btn-icon" id="explore-watchlist" aria-label="Add to watchlist"><i
+              class="fas fa-plus"></i></button>
+          <button class="btn-icon" id="explore-download" aria-label="Download"><i class="fas fa-download"></i></button>
+          <button class="btn-similars" id="explore-similars-btn">Similars</button>
         </div>
       </div>
-      <div class="server-selector">
-        <label for="server">
-          <i class="fas fa-server"></i> Server:
-        </label>
-        <select id="server">
-          <optgroup label="⭐ Full HD (1080p)">
-            <option value="player.videasy.net">Videasy</option>
-            <option value="autoembed">AutoEmbed</option>
-            <option value="embedsu">Embed.su</option>
-            <option value="vidsrc.cc">VidSrc.cc</option>
-          </optgroup>
-          <optgroup label="🎬 HD (720p)">
-            <option value="2embed">2Embed</option>
-            <option value="vidsrc.xyz">VidSrc.xyz</option>
-            <option value="multiembed">MultiEmbed</option>
-          </optgroup>
-          <optgroup label="📺 Multi-Quality (Auto)">
-            <option value="vidsrc.me">VidSrc.me</option>
-            <option value="moviesapi">MoviesAPI</option>
-            <option value="smashystream">SmashyStream</option>
-          </optgroup>
-          <optgroup label="🔄 Backup Servers">
-            <option value="superembed">SuperEmbed</option>
-            <option value="nontongo">NontonGo</option>
-          </optgroup>
-        </select>
+    </div>
+
+    <!-- Scrollable sections below hero -->
+    <div class="explore-sections">
+      <div class="explore-section" id="explore-cast-section">
+        <h2><span class="section-accent"></span> Actors</h2>
+        <div class="cast-grid" id="cast-grid"></div>
       </div>
-      <div class="video-container">
-        <iframe id="modal-video" width="100%" height="100%" frameborder="0" allowfullscreen
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      <div class="explore-section" id="explore-similar-section">
+        <h2><span class="section-accent"></span> Similar</h2>
+        <div class="similar-grid" id="similar-grid"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!--  FULLSCREEN VIDKING PLAYER                   -->
+  <!-- ============================================ -->
+  <div class="fullscreen-player" id="fullscreen-player" aria-hidden="true">
+    <button class="player-close" id="player-close" aria-label="Close player"><i class="fas fa-times"></i></button>
+    <iframe id="player-iframe" allowfullscreen
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+  </div>
+
+  <!-- ============================================ -->
+  <!--  AUTH MODAL                                  -->
+  <!-- ============================================ -->
+  <div class="auth-modal" id="auth-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="auth-backdrop" id="auth-backdrop"></div>
+    <div class="auth-content">
+      <button class="close" id="auth-close" aria-label="Close"><i class="fas fa-times"></i></button>
+      <div class="auth-header">
+        <span class="logo-text">Loop<span class="logo-accent">Flix</span></span>
+        <p>Sign in to save your watchlist and track progress</p>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Login</button>
+        <button class="auth-tab" data-tab="register">Create Account</button>
+      </div>
+      <form id="auth-form" autocomplete="off">
+        <input type="text" id="auth-username" placeholder="Username" required />
+        <input type="password" id="auth-password" placeholder="Password" required />
+        <button type="submit" class="btn-play auth-submit" id="auth-submit">Login</button>
+      </form>
+      <p class="auth-error" id="auth-error"></p>
     </div>
   </div>
 
   <!-- Search Modal -->
   <div class="search-modal" id="search-modal" role="dialog" aria-modal="true" aria-label="Search">
-    <button class="close" id="search-close" aria-label="Close search">
-      <i class="fas fa-times"></i>
-    </button>
+    <button class="close" id="search-close" aria-label="Close search"><i class="fas fa-times"></i></button>
     <div class="search-inner">
       <div class="search-input-wrapper">
         <i class="fas fa-search search-icon"></i>
@@ -197,9 +230,7 @@
   </div>
 
   <!-- Back to Top -->
-  <button class="back-to-top" id="back-to-top" aria-label="Back to top">
-    <i class="fas fa-arrow-up"></i>
-  </button>
+  <button class="back-to-top" id="back-to-top" aria-label="Back to top"><i class="fas fa-arrow-up"></i></button>
 
   <!-- Toast Notifications -->
   <div class="toast-container" id="toast-container"></div>
