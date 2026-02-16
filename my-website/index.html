@@ -1,359 +1,229 @@
-< !DOCTYPE html > <html lang="en"> < head > <meta charset="UTF-8"/> < meta name = "viewport" content = "width=device-width, initial-scale=1.0" /> <meta name="description" content="LoopFlix — Stream trending movies, TV shows, and anime for free."/> < meta http - equiv = "Content-Security-Policy" content = "
- default - src 'self';
-script - src 'self';
-style - src 'self' https : // fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline';
-font - src https : // fonts.gstatic.com https://cdnjs.cloudflare.com;
-img - src 'self' https : // image.tmdb.org data:;
-connect - src https : // api.themoviedb.org;
-frame - src https : // www.vidking.net https://vidsrc.cc https://player.videasy.net https://www.youtube.com https://www.youtube-nocookie.com;
-"/>
- < title > LoopFlix < /title>
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="LoopFlix - Stream trending movies, TV shows, and anime for free."/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' https://image.tmdb.org data:; connect-src https://api.themoviedb.org; frame-src https://www.vidking.net https://vidsrc.cc https://player.videasy.net https://www.youtube.com https://www.youtube-nocookie.com;"/>
+  <title>LoopFlix</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#e50914">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LoopFlix">
-  <link rel="apple-touch-icon" href="icons/icon - 192. png ">
- < link rel = "preconnect" href = "https://fonts.googleapis.com" /> <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/> < link rel = "preconnect" href = "https://image.tmdb.org" > <link rel="preconnect" href="https://api.themoviedb.org"> < link href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel = "stylesheet" /> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/> < link rel = "stylesheet" href = "css/home.css" /> <script defer src="js/home.js"> < /script>
-</head > <body>
-
-<!-- Loading Splash -->
-< div class = "splash-screen" id = "splash-screen" > <div class="splash-content"> < span class = "splash-logo" > Loop < span class = "logo-accent" > Flix < /span></span > <div class="splash-spinner"> < /div>
-  </div > </div> < a href = "#main-content" class = "skip-link" > Skip to content < /a>
-
-<!-- Offline Bar -->
-<div class="offline-bar" id="offline-bar">
-  <i class="fas fa-wifi"></i > You 're offline — some features may be unavailable.
- < /div>
-
-<!-- Navbar -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="preconnect" href="https://image.tmdb.org">
+  <link rel="preconnect" href="https://api.themoviedb.org">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="stylesheet" href="css/home.css"/>
+  <script defer src="js/home.js"></script>
+</head>
+<body>
+<div class="splash-screen" id="splash-screen">
+  <div class="splash-content">
+    <span class="splash-logo">Loop<span class="logo-accent">Flix</span></span>
+    <div class="splash-spinner"></div>
+  </div>
+</div>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<div class="offline-bar" id="offline-bar"><i class="fas fa-wifi"></i> You're offline - some features may be unavailable.</div>
 <nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
-  <div class="nav-brand">
-    <span class="logo-text">Loop<span class="logo-accent">Flix</span > </span> < /div>
+  <div class="nav-brand"><span class="logo-text">Loop<span class="logo-accent">Flix</span></span></div>
   <div class="nav-links">
-    <a href="index.html" class="nav-link active">
-      <i class="fas fa-home"></i > Home < /a>
-    <div class="search-trigger" id="search-trigger">
-      <i class="fas fa-search"></i > <span> Search ...</span> < /div>
-    <button class="nav-user" id="nav-user" aria-label="User account">
-      <i class="fas fa-user"></i > <span id="nav-username"> < /span>
-    </button > </div> < div class = "category-tabs" > <button class="category-tab active" data-category="all"> All < /button>
-    <button class="category-tab" data-category="movies"><i class="fas fa-film"></i > Movies < /button>
-    <button class="category-tab" data-category="tv"><i class="fas fa-tv"></i > TV Shows < /button>
-    <button class="category-tab" data-category="anime"><i class="fas fa-dragon"></i > Anime < /button>
-  </div > </nav> < main id = "main-content" >
-
-<!-- ========== BANNER CAROUSEL ========== --> <section class="banner-carousel" id="banner-carousel" aria-label="Featured content">
-    <div class="carousel-track" id="carousel-track"></div>
-    <button class="carousel-arrow prev" id="carousel-prev" aria-label="Previous">
-        <i class="fas fa-chevron-left"></i>
-    </button>
-    <button class="carousel-arrow next" id="carousel-next" aria-label="Next">
-        <i class="fas fa-chevron-right"></i>
-    </button>
-    <div class="carousel-dots" id="carousel-dots"></div>
+    <a href="index.html" class="nav-link active"><i class="fas fa-home"></i> Home</a>
+    <div class="search-trigger" id="search-trigger"><i class="fas fa-search"></i> <span>Search...</span></div>
+    <button class="nav-user" id="nav-user" aria-label="User account"><i class="fas fa-user"></i> <span id="nav-username"></span></button>
+  </div>
+  <div class="category-tabs">
+    <button class="category-tab active" data-category="all">All</button>
+    <button class="category-tab" data-category="movies"><i class="fas fa-film"></i> Movies</button>
+    <button class="category-tab" data-category="tv"><i class="fas fa-tv"></i> TV Shows</button>
+    <button class="category-tab" data-category="anime"><i class="fas fa-dragon"></i> Anime</button>
+  </div>
+</nav>
+<main id="main-content">
+<section class="banner-carousel" id="banner-carousel" aria-label="Featured content">
+  <div class="carousel-track" id="carousel-track"></div>
+  <button class="carousel-arrow prev" id="carousel-prev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+  <button class="carousel-arrow next" id="carousel-next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+  <div class="carousel-dots" id="carousel-dots"></div>
 </section>
-
-<!-- ========== CONTINUE WATCHING ========== -->
 <section class="row" id="continue-watching-row" style="display:none">
-    <h2>
-        <i class="fas fa-history"></i>
-        Continue Watching</h2>
-    <div class="list-wrapper">
-        <button class="scroll-btn scroll-left" data-target="continue-list">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="list" id="continue-list"></div>
-        <button class="scroll-btn scroll-right" data-target="continue-list">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
+  <h2><i class="fas fa-history"></i> Continue Watching</h2>
+  <div class="list-wrapper">
+    <button class="scroll-btn scroll-left" data-target="continue-list"><i class="fas fa-chevron-left"></i></button>
+    <div class="list" id="continue-list"></div>
+    <button class="scroll-btn scroll-right" data-target="continue-list"><i class="fas fa-chevron-right"></i></button>
+  </div>
 </section>
-
-<!-- ========== MY LIST ========== -->
 <section class="row" id="watchlist-row" style="display:none">
-    <h2>
-        <i class="fas fa-bookmark"></i>
-        My List</h2>
-    <div class="list-wrapper">
-        <button class="scroll-btn scroll-left" data-target="watchlist-list">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="list" id="watchlist-list"></div>
-        <button class="scroll-btn scroll-right" data-target="watchlist-list">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
+  <h2><i class="fas fa-bookmark"></i> My List</h2>
+  <div class="list-wrapper">
+    <button class="scroll-btn scroll-left" data-target="watchlist-list"><i class="fas fa-chevron-left"></i></button>
+    <div class="list" id="watchlist-list"></div>
+    <button class="scroll-btn scroll-right" data-target="watchlist-list"><i class="fas fa-chevron-right"></i></button>
+  </div>
 </section>
-
-<!-- ========== TRENDING ROWS ========== -->
 <section class="row" aria-label="Trending Movies">
-    <h2>
-        <i class="fas fa-fire"></i>
-        Trending Movies</h2>
-    <div class="list-wrapper">
-        <button class="scroll-btn scroll-left" data-target="movies-list">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="list" id="movies-list">
-            <div class="skeleton-row">
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-            </div>
-        </div>
-        <button class="scroll-btn scroll-right" data-target="movies-list">
-            <i class="fas fa-chevron-right"></i>
-        </button>
+  <h2><i class="fas fa-fire"></i> Trending Movies</h2>
+  <div class="list-wrapper">
+    <button class="scroll-btn scroll-left" data-target="movies-list"><i class="fas fa-chevron-left"></i></button>
+    <div class="list" id="movies-list">
+      <div class="skeleton-row"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
     </div>
+    <button class="scroll-btn scroll-right" data-target="movies-list"><i class="fas fa-chevron-right"></i></button>
+  </div>
 </section>
-
 <section class="row" aria-label="Trending TV Shows">
-    <h2>
-        <i class="fas fa-tv"></i>
-        Trending TV Shows</h2>
-    <div class="list-wrapper">
-        <button class="scroll-btn scroll-left" data-target="tvshows-list">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="list" id="tvshows-list">
-            <div class="skeleton-row">
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-            </div>
-        </div>
-        <button class="scroll-btn scroll-right" data-target="tvshows-list">
-            <i class="fas fa-chevron-right"></i>
-        </button>
+  <h2><i class="fas fa-tv"></i> Trending TV Shows</h2>
+  <div class="list-wrapper">
+    <button class="scroll-btn scroll-left" data-target="tvshows-list"><i class="fas fa-chevron-left"></i></button>
+    <div class="list" id="tvshows-list">
+      <div class="skeleton-row"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
     </div>
+    <button class="scroll-btn scroll-right" data-target="tvshows-list"><i class="fas fa-chevron-right"></i></button>
+  </div>
 </section>
-
 <section class="row" aria-label="Trending Anime">
-    <h2>
-        <i class="fas fa-dragon"></i>
-        Trending Anime</h2>
-    <div class="list-wrapper">
-        <button class="scroll-btn scroll-left" data-target="anime-list">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="list" id="anime-list">
-            <div class="skeleton-row">
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-            </div>
-        </div>
-        <button class="scroll-btn scroll-right" data-target="anime-list">
-            <i class="fas fa-chevron-right"></i>
-        </button>
+  <h2><i class="fas fa-dragon"></i> Trending Anime</h2>
+  <div class="list-wrapper">
+    <button class="scroll-btn scroll-left" data-target="anime-list"><i class="fas fa-chevron-left"></i></button>
+    <div class="list" id="anime-list">
+      <div class="skeleton-row"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
     </div>
+    <button class="scroll-btn scroll-right" data-target="anime-list"><i class="fas fa-chevron-right"></i></button>
+  </div>
 </section>
-
-<!-- ========== GENRE ROWS (JS-populated) ========== -->
 <div id="genre-rows"></div>
-
-<!-- ========== RECENTLY WATCHED ========== -->
 <section class="row" id="history-row" style="display:none">
-    <h2>
-        <i class="fas fa-clock-rotate-left"></i>
-        Recently Watched</h2>
-    <div class="list-wrapper">
-        <button class="scroll-btn scroll-left" data-target="history-list">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="list" id="history-list"></div>
-        <button class="scroll-btn scroll-right" data-target="history-list">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
-</section></main><!-- ========== EXPLORE VIEW ========== --><div class="explore-view" id="explore-view" aria-hidden="true">
-<div class="explore-hero">
+  <h2><i class="fas fa-clock-rotate-left"></i> Recently Watched</h2>
+  <div class="list-wrapper">
+    <button class="scroll-btn scroll-left" data-target="history-list"><i class="fas fa-chevron-left"></i></button>
+    <div class="list" id="history-list"></div>
+    <button class="scroll-btn scroll-right" data-target="history-list"><i class="fas fa-chevron-right"></i></button>
+  </div>
+</section>
+</main>
+<div class="explore-view" id="explore-view" aria-hidden="true">
+  <div class="explore-hero">
     <div class="explore-trailer-wrap" id="explore-trailer-wrap">
-        <iframe id="explore-trailer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        <img id="explore-fallback-bg" alt=""/>
+      <iframe id="explore-trailer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <img id="explore-fallback-bg" alt=""/>
     </div>
     <div class="explore-gradient"></div>
-    <button class="explore-back" id="explore-back" aria-label="Go back">
-        <i class="fas fa-arrow-left"></i>
-    </button>
-    <button class="explore-mute" id="explore-mute" aria-label="Toggle mute">
-        <i class="fas fa-volume-xmark"></i>
-    </button>
-
+    <button class="explore-back" id="explore-back" aria-label="Go back"><i class="fas fa-arrow-left"></i></button>
+    <button class="explore-mute" id="explore-mute" aria-label="Toggle mute"><i class="fas fa-volume-xmark"></i></button>
     <div class="explore-hero-content">
-        <h1 id="explore-title"></h1>
-        <div class="explore-meta">
-            <span class="meta-badge">
-                <i class="far fa-calendar"></i>
-                <span id="explore-year"></span>
-            </span>
-            <span class="meta-badge">
-                <i class="far fa-clock"></i>
-                <span id="explore-runtime"></span>
-            </span>
-            <span class="meta-badge star-badge">
-                <i class="fas fa-star"></i>
-                <span id="explore-rating"></span>
-            </span>
-            <span class="content-rating" id="explore-content-rating"></span>
+      <h1 id="explore-title"></h1>
+      <div class="explore-meta">
+        <span class="meta-badge"><i class="far fa-calendar"></i> <span id="explore-year"></span></span>
+        <span class="meta-badge"><i class="far fa-clock"></i> <span id="explore-runtime"></span></span>
+        <span class="meta-badge star-badge"><i class="fas fa-star"></i> <span id="explore-rating"></span></span>
+        <span class="content-rating" id="explore-content-rating"></span>
+      </div>
+      <div class="explore-genres" id="explore-genres"></div>
+      <p class="explore-overview" id="explore-overview"></p>
+      <div class="explore-actions">
+        <button class="btn-play" id="explore-play"><i class="fas fa-play"></i> Play</button>
+        <button class="btn-icon" id="explore-watchlist" aria-label="Add to watchlist"><i class="fas fa-plus"></i></button>
+        <button class="btn-icon" id="explore-share" aria-label="Share"><i class="fas fa-share-alt"></i></button>
+        <button class="btn-similars" id="explore-similars-btn">Similars</button>
+      </div>
+      <div class="user-rating" id="user-rating-section">
+        <span class="user-rating-label">Your Rating</span>
+        <div class="user-stars" id="user-stars">
+          <span data-star="1">&#9734;</span><span data-star="2">&#9734;</span><span data-star="3">&#9734;</span><span data-star="4">&#9734;</span><span data-star="5">&#9734;</span>
         </div>
-        <div class="explore-genres" id="explore-genres"></div>
-        <p class="explore-overview" id="explore-overview"></p>
-        <div class="explore-actions">
-            <button class="btn-play" id="explore-play">
-                <i class="fas fa-play"></i>
-                Play
-            </button>
-            <button class="btn-icon" id="explore-watchlist" aria-label="Add to watchlist">
-                <i class="fas fa-plus"></i>
-            </button>
-            <button class="btn-icon" id="explore-share" aria-label="Share">
-                <i class="fas fa-share-alt"></i>
-            </button>
-            <button class="btn-similars" id="explore-similars-btn">Similars</button>
-        </div>
-        <div class="user-rating" id="user-rating-section">
-            <span class="user-rating-label">Your Rating</span>
-            <div class="user-stars" id="user-stars">
-                <span data-star="1">☆</span>
-                <span data-star="2">☆</span>
-                <span data-star="3">☆</span>
-                <span data-star="4">☆</span>
-                <span data-star="5">☆</span>
-            </div>
-        </div>
+      </div>
     </div>
-</div>
-
-<div
-    class="explore-sections">
-    <!-- Episode Picker (TV only) -->
+  </div>
+  <div class="explore-sections">
     <div class="explore-section" id="episode-picker" style="display:none">
-        <div class="episode-picker-header">
-            <h2>
-                <span class="section-accent"></span>
-                Episodes</h2>
-            <select id="season-select" class="season-select"></select>
-        </div>
-        <div class="episode-list" id="episode-list"></div>
+      <div class="episode-picker-header">
+        <h2><span class="section-accent"></span> Episodes</h2>
+        <select id="season-select" class="season-select"></select>
+      </div>
+      <div class="episode-list" id="episode-list"></div>
     </div>
-
     <div class="explore-section" id="explore-cast-section">
-        <h2>
-            <span class="section-accent"></span>
-            Actors</h2>
-        <div class="cast-grid" id="cast-grid"></div>
+      <h2><span class="section-accent"></span> Actors</h2>
+      <div class="cast-grid" id="cast-grid"></div>
     </div>
-
     <div class="explore-section" id="explore-similar-section">
-        <h2>
-            <span class="section-accent"></span>
-            Similar</h2>
-        <div class="similar-grid" id="similar-grid"></div>
+      <h2><span class="section-accent"></span> Similar</h2>
+      <div class="similar-grid" id="similar-grid"></div>
     </div>
-</div></div><!-- ========== PLAYER OVERLAY ========== --><div class="fullscreen-player" id="fullscreen-player" aria-hidden="true">
-<div class="player-header">
-    <div class="server-selector">
-        <span class="server-label">
-            <i class="fas fa-server"></i>
-            Server:
-        </span>
-        <button class="server-btn active" data-server="vidking">Vidking</button>
-        <button class="server-btn" data-server="vidsrc">Vidsrc</button>
-        <button class="server-btn" data-server="videasy">Videasy</button>
-    </div>
-    <button class="player-close" id="player-close" aria-label="Close player">
-        <i class="fas fa-times"></i>
-    </button>
+  </div>
 </div>
-<iframe id="player-iframe" allowfullscreen></iframe></div><!-- ========== AUTH MODAL ========== --><div class="auth-modal" id="auth-modal" role="dialog" aria-modal="true" aria-hidden="true">
-<div class="auth-backdrop" id="auth-backdrop"></div>
-<div class="auth-content">
-    <button class="close" id="auth-close" aria-label="Close">
-        <i class="fas fa-times"></i>
-    </button>
+<div class="fullscreen-player" id="fullscreen-player" aria-hidden="true">
+  <div class="player-header">
+    <div class="server-selector">
+      <span class="server-label"><i class="fas fa-server"></i> Server:</span>
+      <button class="server-btn active" data-server="vidking">Vidking</button>
+      <button class="server-btn" data-server="vidsrc">Vidsrc</button>
+      <button class="server-btn" data-server="videasy">Videasy</button>
+    </div>
+    <button class="player-close" id="player-close" aria-label="Close player"><i class="fas fa-times"></i></button>
+  </div>
+  <iframe id="player-iframe" allowfullscreen></iframe>
+</div>
+<div class="auth-modal" id="auth-modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="auth-backdrop" id="auth-backdrop"></div>
+  <div class="auth-content">
+    <button class="close" id="auth-close" aria-label="Close"><i class="fas fa-times"></i></button>
     <div class="auth-header">
-        <span class="logo-text">Loop<span class="logo-accent">Flix</span>
-        </span>
-        <p>Sign in to save your watchlist and track progress</p>
+      <span class="logo-text">Loop<span class="logo-accent">Flix</span></span>
+      <p>Sign in to save your watchlist and track progress</p>
     </div>
     <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="login">Login</button>
-        <button class="auth-tab" data-tab="register">Create Account</button>
+      <button class="auth-tab active" data-tab="login">Login</button>
+      <button class="auth-tab" data-tab="register">Create Account</button>
     </div>
     <form id="auth-form" autocomplete="off">
-        <input type="text" id="auth-username" placeholder="Username" required/>
-        <input type="password" id="auth-password" placeholder="Password" required/>
-        <button type="submit" class="btn-play auth-submit" id="auth-submit">Login</button>
+      <input type="text" id="auth-username" placeholder="Username" required/>
+      <input type="password" id="auth-password" placeholder="Password" required/>
+      <button type="submit" class="btn-play auth-submit" id="auth-submit">Login</button>
     </form>
     <p class="auth-error" id="auth-error"></p>
-</div></div><!-- ========== SEARCH MODAL ========== --><div class="search-modal" id="search-modal" role="dialog" aria-modal="true" aria-label="Search">
-<button class="close" id="search-close" aria-label="Close search">
-    <i class="fas fa-times"></i>
-</button>
-<div class="search-inner">
+  </div>
+</div>
+<div class="search-modal" id="search-modal" role="dialog" aria-modal="true" aria-label="Search">
+  <button class="close" id="search-close" aria-label="Close search"><i class="fas fa-times"></i></button>
+  <div class="search-inner">
     <div class="search-input-wrapper">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" id="search-input" placeholder="Search movies, shows, anime..." autocomplete="off"/>
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" id="search-input" placeholder="Search movies, shows, anime..." autocomplete="off"/>
     </div>
     <div class="search-tabs" id="search-tabs">
-        <button class="search-tab active" data-filter="all">All</button>
-        <button class="search-tab" data-filter="movie">Movies</button>
-        <button class="search-tab" data-filter="tv">TV Shows</button>
+      <button class="search-tab active" data-filter="all">All</button>
+      <button class="search-tab" data-filter="movie">Movies</button>
+      <button class="search-tab" data-filter="tv">TV Shows</button>
     </div>
     <div class="recent-searches" id="recent-searches" style="display:none">
-        <h3>
-            <i class="fas fa-clock"></i>
-            Recent Searches</h3>
-        <div id="recent-searches-list"></div>
+      <h3><i class="fas fa-clock"></i> Recent Searches</h3>
+      <div id="recent-searches-list"></div>
     </div>
     <div class="results" id="search-results"></div>
-</div></div><!-- Back to Top --><button class="back-to-top" id="back-to-top" aria-label="Back to top">
-<i class="fas fa-arrow-up"></i></button><!-- Toast Container --><div class="toast-container" id="toast-container"></div><!-- Footer --><footer class="footer">
-<div class="footer-content">
-    <span class="footer-logo">Loop<span class="logo-accent">Flix</span>
-    </span>
+  </div>
+</div>
+<button class="back-to-top" id="back-to-top" aria-label="Back to top"><i class="fas fa-arrow-up"></i></button>
+<div class="toast-container" id="toast-container"></div>
+<footer class="footer">
+  <div class="footer-content">
+    <span class="footer-logo">Loop<span class="logo-accent">Flix</span></span>
     <p>&copy; 2025 LoopFlix. All rights reserved.</p>
-    <div class="footer-links">
-        <a href="#">Disclaimer</a>
-        <a href="#">About Us</a>
-        <a href="#">Contact Us</a>
-    </div>
-    <p class="footer-note">Data provided by
-        <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDB</a>
-    </p>
+    <div class="footer-links"><a href="#">Disclaimer</a><a href="#">About Us</a><a href="#">Contact Us</a></div>
+    <p class="footer-note">Data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDB</a></p>
     <div class="footer-data-actions">
-        <button class="data-btn" id="btn-export">
-            <i class="fas fa-download"></i>
-            Export Data
-        </button>
-        <button class="data-btn" id="btn-import">
-            <i class="fas fa-upload"></i>
-            Import Data
-        </button>
-        <input type="file" id="import-file" accept=".json" style="display:none"></div>
+      <button class="data-btn" id="btn-export"><i class="fas fa-download"></i> Export Data</button>
+      <button class="data-btn" id="btn-import"><i class="fas fa-upload"></i> Import Data</button>
+      <input type="file" id="import-file" accept=".json" style="display:none">
     </div>
+  </div>
 </footer>
-
-<!-- Service Worker Registration -->
-<script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
-</script></body></html>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}</script>
+</body>
+</html>
