@@ -694,7 +694,12 @@
     const path = currentServer.tv.replace('{id}', tvId).replace('{s}', season).replace('{e}', episode);
     const params = new URLSearchParams(currentServer.params);
     const url = `${currentServer.base}${path}?${params}`;
-    showInlinePlayer(url);
+    const player = document.getElementById('fullscreen-player');
+    document.getElementById('player-iframe').src = url;
+    player.classList.add('active');
+    player.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    stopTrailer();
     if (currentItem) addToHistory(currentItem);
   }
 
@@ -771,7 +776,7 @@
   }
 
   // ==============================
-  //  Player (Inline Theater Mode)
+  //  Player (Overlay with Server Selector)
   // ==============================
 
   function openPlayer(item) {
@@ -781,24 +786,21 @@
     const path = pathTemplate.replace('{id}', item.id).replace('{s}', '1').replace('{e}', '1');
     const params = new URLSearchParams(currentServer.params);
     const url = `${currentServer.base}${path}?${params}`;
-    showInlinePlayer(url);
+    const player = document.getElementById('fullscreen-player');
+    document.getElementById('player-iframe').src = url;
+    player.classList.add('active');
+    player.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    stopTrailer();
     addToHistory(item);
   }
 
-  function showInlinePlayer(url) {
-    const player = document.getElementById('inline-player');
-    const iframe = document.getElementById('player-iframe');
-    iframe.src = url;
-    player.style.display = 'block';
-    stopTrailer();
-    // Scroll player into view
-    player.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
   function closePlayer() {
-    const player = document.getElementById('inline-player');
+    const player = document.getElementById('fullscreen-player');
     document.getElementById('player-iframe').src = '';
-    player.style.display = 'none';
+    player.classList.remove('active');
+    player.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
     displayContinueWatching();
     displayHistoryRow();
   }
@@ -807,10 +809,9 @@
     const server = SERVERS.find(s => s.id === serverId);
     if (!server) return;
     currentServer = server;
-    // Update server selector UI
     document.querySelectorAll('.server-btn').forEach(b => b.classList.toggle('active', b.dataset.server === serverId));
     // If player is open, reload with new server
-    if (currentItem && document.getElementById('inline-player').style.display === 'block') {
+    if (currentItem && document.getElementById('fullscreen-player').classList.contains('active')) {
       openPlayer(currentItem);
     }
     showToast(`Switched to ${server.name}`, 'success');
@@ -1004,7 +1005,7 @@
     // Keyboard
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        if (document.getElementById('inline-player').style.display === 'block') closePlayer();
+        if (document.getElementById('fullscreen-player').classList.contains('active')) closePlayer();
         else if (document.getElementById('auth-modal').classList.contains('active')) closeAuthModal();
         else if (document.getElementById('search-modal').classList.contains('active')) closeSearchModal();
         else if (document.getElementById('explore-view').classList.contains('active')) closeExploreView();
