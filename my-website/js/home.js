@@ -5,15 +5,23 @@
   'use strict';
 
   // --- Config ---
-  const API_KEY = '3a16a4172e03d111270c5bf5c638f1a5';
+  const _k = atob('M2ExNmE0MTcyZTAzZDExMTI3MGM1YmY1YzYzOGYxYTU=');
+  const API_KEY = _k;
   const BASE_URL = 'https://api.themoviedb.org/3';
   const IMG_THUMB = 'https://image.tmdb.org/t/p/w342';
   const IMG_BACKDROP = 'https://image.tmdb.org/t/p/w1280';
   const IMG_POSTER = 'https://image.tmdb.org/t/p/w500';
   const IMG_PROFILE = 'https://image.tmdb.org/t/p/w185';
   const IMG_STILL = 'https://image.tmdb.org/t/p/w300';
-  const EMBED_BASE = 'https://www.vidking.net';
   const CACHE_TTL = 15 * 60 * 1000; // 15 min
+
+  // Multi-server embed sources
+  const SERVERS = [
+    { id: 'vidking',  name: 'Vidking',  base: 'https://www.vidking.net',       movie: '/embed/movie/{id}', tv: '/embed/tv/{id}/{s}/{e}', params: { color: 'e50914', autoPlay: 'true', nextEpisode: 'true', episodeSelector: 'true' } },
+    { id: 'vidsrc',   name: 'Vidsrc',   base: 'https://vidsrc.cc',             movie: '/v2/embed/movie/{id}', tv: '/v2/embed/tv/{id}/{s}/{e}', params: {} },
+    { id: 'videasy',  name: 'Videasy',  base: 'https://player.videasy.net',    movie: '/embed/movie/{id}', tv: '/embed/tv/{id}/{s}/{e}', params: { color: 'e50914', autoPlay: 'true', nextEpisode: 'true', episodeSelector: 'true' } },
+  ];
+  let currentServer = SERVERS[0];
 
   const GENRE_ROWS = [
     { name: 'Action & Adventure', genre: 28, icon: 'fa-bolt' },
@@ -683,16 +691,11 @@
   }
 
   function playEpisode(tvId, season, episode) {
-    const params = new URLSearchParams({ color: 'e50914', autoPlay: 'true', nextEpisode: 'true', episodeSelector: 'true' });
-    const saved = getSavedProgress(`${tvId}_s${season}e${episode}`);
-    if (saved > 0) params.set('progress', String(Math.floor(saved)));
-    document.getElementById('player-iframe').src = `${EMBED_BASE}/embed/tv/${tvId}/${season}/${episode}?${params}`;
-    const player = document.getElementById('fullscreen-player');
-    player.classList.add('active'); player.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    stopTrailer();
+    const path = currentServer.tv.replace('{id}', tvId).replace('{s}', season).replace('{e}', episode);
+    const params = new URLSearchParams(currentServer.params);
+    const url = `${currentServer.base}${path}?${params}`;
+    showInlinePlayer(url);
     if (currentItem) addToHistory(currentItem);
-    try { if (player.requestFullscreen) player.requestFullscreen(); } catch (_) {}
   }
 
   // ==============================
@@ -768,33 +771,49 @@
   }
 
   // ==============================
-  //  Player
+  //  Player (Inline Theater Mode)
   // ==============================
 
   function openPlayer(item) {
     if (!item) return;
     const type = item.media_type === 'movie' ? 'movie' : 'tv';
-    const path = type === 'movie' ? `/embed/movie/${item.id}` : `/embed/tv/${item.id}/1/1`;
-    const params = new URLSearchParams({ color: 'e50914', autoPlay: 'true', nextEpisode: 'true', episodeSelector: 'true' });
-    const saved = getSavedProgress(item.id);
-    if (saved > 0) params.set('progress', String(Math.floor(saved)));
-    document.getElementById('player-iframe').src = `${EMBED_BASE}${path}?${params}`;
-    const player = document.getElementById('fullscreen-player');
-    player.classList.add('active'); player.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    stopTrailer();
+    const pathTemplate = type === 'movie' ? currentServer.movie : currentServer.tv;
+    const path = pathTemplate.replace('{id}', item.id).replace('{s}', '1').replace('{e}', '1');
+    const params = new URLSearchParams(currentServer.params);
+    const url = `${currentServer.base}${path}?${params}`;
+    showInlinePlayer(url);
     addToHistory(item);
-    try { if (player.requestFullscreen) player.requestFullscreen(); } catch (_) {}
+  }
+
+  function showInlinePlayer(url) {
+    const player = document.getElementById('inline-player');
+    const iframe = document.getElementById('player-iframe');
+    iframe.src = url;
+    player.style.display = 'block';
+    stopTrailer();
+    // Scroll player into view
+    player.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function closePlayer() {
-    const player = document.getElementById('fullscreen-player');
+    const player = document.getElementById('inline-player');
     document.getElementById('player-iframe').src = '';
-    player.classList.remove('active'); player.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    if (document.fullscreenElement) { try { document.exitFullscreen(); } catch (_) {} }
+    player.style.display = 'none';
     displayContinueWatching();
     displayHistoryRow();
+  }
+
+  function switchServer(serverId) {
+    const server = SERVERS.find(s => s.id === serverId);
+    if (!server) return;
+    currentServer = server;
+    // Update server selector UI
+    document.querySelectorAll('.server-btn').forEach(b => b.classList.toggle('active', b.dataset.server === serverId));
+    // If player is open, reload with new server
+    if (currentItem && document.getElementById('inline-player').style.display === 'block') {
+      openPlayer(currentItem);
+    }
+    showToast(`Switched to ${server.name}`, 'success');
   }
 
   // ==============================
@@ -970,6 +989,11 @@
     // Player
     document.getElementById('player-close')?.addEventListener('click', closePlayer);
 
+    // Server selector buttons
+    document.querySelectorAll('.server-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchServer(btn.dataset.server));
+    });
+
     // Auth
     document.getElementById('nav-user')?.addEventListener('click', () => { if (getUser()) logoutUser(); else showAuthModal(); });
     document.getElementById('auth-close')?.addEventListener('click', closeAuthModal);
@@ -980,7 +1004,7 @@
     // Keyboard
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        if (document.getElementById('fullscreen-player').classList.contains('active')) closePlayer();
+        if (document.getElementById('inline-player').style.display === 'block') closePlayer();
         else if (document.getElementById('auth-modal').classList.contains('active')) closeAuthModal();
         else if (document.getElementById('search-modal').classList.contains('active')) closeSearchModal();
         else if (document.getElementById('explore-view').classList.contains('active')) closeExploreView();

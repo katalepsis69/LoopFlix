@@ -456,21 +456,47 @@ body {
 .similar-grid .card img { height: 220px; width: 100%; }
 
 /* ======================================
-   Fullscreen Player
+   Inline Theater Player
    ====================================== */
-.fullscreen-player {
-  position: fixed; inset: 0; z-index: 100; background: #000;
-  display: none; align-items: center; justify-content: center;
+.inline-player {
+  background: #000; border-radius: var(--radius-lg);
+  overflow: hidden; margin: 0 auto 32px;
+  max-width: 1200px; width: 100%;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
 }
-.fullscreen-player.active { display: flex; }
-.fullscreen-player iframe { width: 100%; height: 100%; border: none; }
+.player-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; background: rgba(15,15,20,0.95);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.server-selector {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.server-label {
+  font-size: 0.8rem; color: var(--text-muted); font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+}
+.server-btn {
+  padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text-secondary); cursor: pointer; transition: all var(--transition);
+}
+.server-btn:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
+.server-btn.active {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+.player-container {
+  position: relative; width: 100%; padding-top: 56.25%; /* 16:9 */
+}
+.player-container iframe {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
+}
 .player-close {
-  position: absolute; top: 16px; right: 16px; z-index: 5;
-  width: 44px; height: 44px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-  color: #fff; font-size: 1.2rem; cursor: pointer;
+  color: #fff; font-size: 1rem; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: all var(--transition);
+  transition: all var(--transition); flex-shrink: 0;
 }
 .player-close:hover { background: var(--accent); border-color: var(--accent); }
 
