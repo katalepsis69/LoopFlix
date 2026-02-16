@@ -21,7 +21,7 @@
     { id: 'vidsrc',   name: 'Vidsrc',   base: 'https://vidsrc.cc',             movie: '/v2/embed/movie/{id}', tv: '/v2/embed/tv/{id}/{s}/{e}', params: {} },
     { id: 'videasy',  name: 'Videasy',  base: 'https://player.videasy.net',    movie: '/embed/movie/{id}', tv: '/embed/tv/{id}/{s}/{e}', params: { color: 'e50914', autoPlay: 'true', nextEpisode: 'true', episodeSelector: 'true' } },
   ];
-  let currentServer = SERVERS[0];
+  let currentServer = SERVERS.find(s => s.id === localStorage.getItem('lf_server')) || SERVERS[0];
 
   const GENRE_ROWS = [
     { name: 'Action & Adventure', genre: 28, icon: 'fa-bolt' },
@@ -49,6 +49,25 @@
   function debounce(fn, delay) {
     let t;
     return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), delay); };
+  }
+
+  async function hashPassword(pw) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // API rate limiter (TMDB allows 40 req/10s)
+  let _fetchCount = 0;
+  setInterval(() => { _fetchCount = 0; }, 10000);
+  async function rateLimitedFetch(url) {
+    if (_fetchCount >= 35) await new Promise(r => setTimeout(r, 1500));
+    _fetchCount++;
+    return safeFetch(url);
+  }
+
+  function hideSplash() {
+    const s = document.getElementById('splash-screen');
+    if (s) { s.classList.add('hidden'); setTimeout(() => s.remove(), 600); }
   }
 
   function escapeHTML(str) {
@@ -79,6 +98,25 @@
     t.innerHTML = `<i class="fas ${icon}"></i> ${escapeHTML(message)}`;
     c.appendChild(t);
     setTimeout(() => t.remove(), 3200);
+  }
+
+  function showResumeToast(item, savedTime) {
+    const c = document.getElementById('toast-container');
+    const mins = Math.floor(savedTime / 60);
+    const secs = Math.floor(savedTime % 60);
+    const t = document.createElement('div');
+    t.className = 'toast resume-toast';
+    t.innerHTML = `
+      <div class="resume-toast-body">
+        <i class="fas fa-play-circle"></i>
+        <span>Continue from ${mins}:${String(secs).padStart(2, '0')}?</span>
+        <button class="resume-btn" id="resume-yes">Resume</button>
+        <button class="resume-dismiss" id="resume-no"><i class="fas fa-times"></i></button>
+      </div>`;
+    c.appendChild(t);
+    t.querySelector('#resume-yes').addEventListener('click', () => { openPlayer(item); t.remove(); });
+    t.querySelector('#resume-no').addEventListener('click', () => t.remove());
+    setTimeout(() => t.remove(), 8000);
   }
 
   // ==============================
@@ -150,21 +188,22 @@
     document.getElementById('auth-submit').textContent = mode === 'login' ? 'Login' : 'Create Account';
     document.getElementById('auth-error').textContent = '';
   }
-  function handleAuthSubmit(e) {
+  async function handleAuthSubmit(e) {
     e.preventDefault();
     const u = document.getElementById('auth-username').value.trim();
     const p = document.getElementById('auth-password').value;
     const err = document.getElementById('auth-error');
     if (!u || !p) { err.textContent = 'Please fill in all fields.'; return; }
     const accs = getAccounts();
+    const hashed = await hashPassword(p);
     if (authMode === 'register') {
       if (accs[u]) { err.textContent = 'Username already taken.'; return; }
-      accs[u] = p; localStorage.setItem('lf_accounts', JSON.stringify(accs));
+      accs[u] = hashed; localStorage.setItem('lf_accounts', JSON.stringify(accs));
       setUser({ username: u }); closeAuthModal();
       showToast(`Welcome to LoopFlix, ${u}!`, 'success');
       displayWatchlistRow();
     } else {
-      if (!accs[u] || accs[u] !== p) { err.textContent = 'Invalid credentials.'; return; }
+      if (!accs[u] || accs[u] !== hashed) { err.textContent = 'Invalid credentials.'; return; }
       setUser({ username: u }); closeAuthModal();
       showToast(`Welcome back, ${u}!`, 'success');
       displayWatchlistRow();
@@ -558,6 +597,57 @@
     }
   }
 
+  function lazyLoadGenreRows() {
+    const container = document.getElementById('genre-rows');
+    if (!container) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        observer.disconnect();
+        loadGenreRows();
+      }
+    }, { rootMargin: '300px' });
+    observer.observe(container);
+  }
+
+  // Extra content rows
+  async function loadExtraRows() {
+    const container = document.getElementById('genre-rows');
+    if (!container) return;
+
+    const extras = [
+      { name: 'Popular This Week', url: `${BASE_URL}/movie/popular?api_key=${API_KEY}`, icon: 'fa-chart-line' },
+      { name: 'Top Rated All Time', url: `${BASE_URL}/movie/top_rated?api_key=${API_KEY}`, icon: 'fa-trophy' },
+      { name: 'New Releases', url: `${BASE_URL}/movie/now_playing?api_key=${API_KEY}`, icon: 'fa-calendar-star' },
+    ];
+
+    for (const ex of extras) {
+      const data = await cachedFetch(ex.url);
+      if (!data?.results?.length) continue;
+      const section = document.createElement('section');
+      section.className = 'row';
+      const listId = `extra-${ex.name.replace(/\s+/g, '-').toLowerCase()}`;
+      section.innerHTML = `
+        <h2><i class="fas ${ex.icon}"></i> ${escapeHTML(ex.name)}</h2>
+        <div class="list-wrapper">
+          <button class="scroll-btn scroll-left" data-target="${listId}"><i class="fas fa-chevron-left"></i></button>
+          <div class="list" id="${listId}"></div>
+          <button class="scroll-btn scroll-right" data-target="${listId}"><i class="fas fa-chevron-right"></i></button>
+        </div>`;
+      container.appendChild(section);
+      const list = section.querySelector('.list');
+      data.results.filter(i => i.poster_path).forEach(item => {
+        item.media_type = 'movie';
+        list.appendChild(createCard(item, null, { showRating: true }));
+      });
+      section.querySelectorAll('.scroll-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const dir = btn.classList.contains('scroll-left') ? -1 : 1;
+          list.scrollBy({ left: list.clientWidth * 0.75 * dir, behavior: 'smooth' });
+        });
+      });
+    }
+  }
+
   // ==============================
   //  EXPLORE VIEW
   // ==============================
@@ -601,6 +691,12 @@
     document.getElementById('cast-grid').innerHTML = '';
     document.getElementById('episode-picker').style.display = 'none';
     document.getElementById('episode-list').innerHTML = '';
+
+    // Resume prompt toast
+    const savedTime = getSavedProgress(item.id);
+    if (savedTime > 30) {
+      setTimeout(() => showResumeToast(item, savedTime), 600);
+    }
 
     // Bind user rating stars
     document.querySelectorAll('#user-stars span').forEach(s => {
@@ -809,6 +905,7 @@
     const server = SERVERS.find(s => s.id === serverId);
     if (!server) return;
     currentServer = server;
+    localStorage.setItem('lf_server', serverId);
     document.querySelectorAll('.server-btn').forEach(b => b.classList.toggle('active', b.dataset.server === serverId));
     // If player is open, reload with new server
     if (currentItem && document.getElementById('fullscreen-player').classList.contains('active')) {
@@ -1014,6 +1111,96 @@
 
     setupScrollButtons();
     setupBackToTop();
+
+    // Category tabs
+    document.querySelectorAll('.category-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const cat = tab.dataset.category;
+        document.querySelectorAll('.category-tab').forEach(t => t.classList.toggle('active', t === tab));
+        filterByCategory(cat);
+      });
+    });
+
+    // Data export/import
+    document.getElementById('btn-export')?.addEventListener('click', exportUserData);
+    document.getElementById('btn-import')?.addEventListener('click', () => document.getElementById('import-file')?.click());
+    document.getElementById('import-file')?.addEventListener('change', importUserData);
+  }
+
+  // ==============================
+  //  Category Tab Filtering
+  // ==============================
+
+  function filterByCategory(category) {
+    const rows = document.querySelectorAll('main .row');
+    const movieLabels = ['Trending Movies', 'Popular This Week', 'Top Rated All Time', 'New Releases', 'Action', 'Comedy', 'Sci-Fi', 'Horror'];
+    const tvLabels = ['Trending TV Shows'];
+    const animeLabels = ['Trending Anime'];
+    const sharedLabels = ['Continue Watching', 'My List', 'Recently Watched'];
+
+    rows.forEach(row => {
+      const heading = row.querySelector('h2')?.textContent?.trim() || '';
+      if (category === 'all') {
+        row.style.display = '';
+        return;
+      }
+      const isShared = sharedLabels.some(l => heading.includes(l));
+      if (isShared) { row.style.display = ''; return; }
+
+      if (category === 'movies') {
+        row.style.display = movieLabels.some(l => heading.includes(l)) ? '' : 'none';
+      } else if (category === 'tv') {
+        row.style.display = tvLabels.some(l => heading.includes(l)) ? '' : 'none';
+      } else if (category === 'anime') {
+        row.style.display = animeLabels.some(l => heading.includes(l)) ? '' : 'none';
+      }
+    });
+  }
+
+  // ==============================
+  //  Data Export / Import
+  // ==============================
+
+  function exportUserData() {
+    const data = {
+      version: 1,
+      exported: new Date().toISOString(),
+      watchlist: JSON.parse(localStorage.getItem('lf_watchlist') || '[]'),
+      history: JSON.parse(localStorage.getItem('lf_history') || '[]'),
+      progress: JSON.parse(localStorage.getItem('lf_progress') || '{}'),
+      ratings: JSON.parse(localStorage.getItem('lf_ratings') || '{}'),
+      accounts: JSON.parse(localStorage.getItem('lf_accounts') || '{}'),
+      server: localStorage.getItem('lf_server') || '',
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `loopflix-backup-${Date.now()}.json`;
+    a.click(); URL.revokeObjectURL(url);
+    showToast('Data exported successfully!', 'success');
+  }
+
+  function importUserData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.version) throw new Error('Invalid backup file');
+        if (data.watchlist) localStorage.setItem('lf_watchlist', JSON.stringify(data.watchlist));
+        if (data.history) localStorage.setItem('lf_history', JSON.stringify(data.history));
+        if (data.progress) localStorage.setItem('lf_progress', JSON.stringify(data.progress));
+        if (data.ratings) localStorage.setItem('lf_ratings', JSON.stringify(data.ratings));
+        if (data.server) localStorage.setItem('lf_server', data.server);
+        showToast('Data imported! Reloading...', 'success');
+        setTimeout(() => location.reload(), 1200);
+      } catch (err) {
+        showToast('Invalid backup file.', 'error');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   }
 
   // ==============================
@@ -1023,6 +1210,12 @@
   async function init() {
     bindEvents();
     updateUserUI();
+
+    // Restore saved server button active state
+    const savedServer = localStorage.getItem('lf_server');
+    if (savedServer) {
+      document.querySelectorAll('.server-btn').forEach(b => b.classList.toggle('active', b.dataset.server === savedServer));
+    }
 
     // Offline check
     if (!navigator.onLine) document.getElementById('offline-bar')?.classList.add('visible');
@@ -1048,8 +1241,12 @@
     displayList(anime, 'anime-list');
     displayHistoryRow();
 
-    // Load genre rows in background
-    loadGenreRows();
+    // Hide splash screen
+    hideSplash();
+
+    // Load extra rows + genre rows lazily in background
+    loadExtraRows();
+    lazyLoadGenreRows();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
