@@ -356,19 +356,7 @@
       shakaPlayer = null;
     }
 
-    // ---- Ad logic ----
-    adState.channelsPlayed++;
-
-    // Preroll on first play, or channel-switch ad
-    if (adState.channelsPlayed === 1) {
-      // First channel — always show preroll
-      await showAdOverlay(AD_CONFIG.prerollDuration, AD_CONFIG.skipAfter);
-    } else if (isSwitch && AD_CONFIG.channelSwitchAd) {
-      // Switching channels — show a shorter ad
-      await showAdOverlay(AD_CONFIG.prerollDuration, AD_CONFIG.skipAfter);
-    }
-
-    // ---- Start Shaka Player ----
+    // ---- Start Shaka Player FIRST ----
     if (!window.shaka) {
       errorEl.textContent = 'Shaka Player library not loaded.';
       errorEl.style.display = '';
@@ -405,8 +393,20 @@
 
     try {
       await shakaPlayer.load(ch.manifest);
-      videoEl.play().catch(() => {});
-      // Start midroll timer & companion banner after stream starts
+
+      // ---- Ad logic (show AFTER stream is loaded) ----
+      adState.channelsPlayed++;
+      if (adState.channelsPlayed === 1 || (isSwitch && AD_CONFIG.channelSwitchAd)) {
+        await showAdOverlay(AD_CONFIG.prerollDuration, AD_CONFIG.skipAfter);
+      }
+
+      // Resume playback after ad or immediately
+      videoEl.play().catch(err => {
+        console.warn('Autoplay blocked:', err.message);
+        errorEl.textContent = 'Tap the play button to start.';
+        errorEl.style.display = '';
+      });
+
       startMidrollTimer();
       showCompanionBanner();
     } catch (err) {
