@@ -753,12 +753,18 @@
     const select = document.getElementById('season-select');
     picker.style.display = '';
     select.innerHTML = '';
-    for (let i = 1; i <= numSeasons; i++) {
-      const opt = document.createElement('option');
-      opt.value = i; opt.textContent = `Season ${i}`;
-      select.appendChild(opt);
+    // Hide the season dropdown if there's only 1 season
+    if (numSeasons <= 1) {
+      select.style.display = 'none';
+    } else {
+      select.style.display = '';
+      for (let i = 1; i <= numSeasons; i++) {
+        const opt = document.createElement('option');
+        opt.value = i; opt.textContent = `Season ${i}`;
+        select.appendChild(opt);
+      }
+      select.onchange = () => loadEpisodes(tvId, +select.value);
     }
-    select.onchange = () => loadEpisodes(tvId, +select.value);
     loadEpisodes(tvId, 1);
   }
 
