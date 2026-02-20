@@ -394,18 +394,18 @@
     try {
       await shakaPlayer.load(ch.manifest);
 
-      // ---- Ad logic (show AFTER stream is loaded) ----
+      // Start playing immediately (must be done before ad overlay to keep user gesture context)
+      videoEl.play().catch(err => {
+        console.warn('Autoplay blocked:', err.message);
+      });
+
+      // ---- Ad logic (show AFTER stream starts, overlay appears on top visually) ----
       adState.channelsPlayed++;
       if (adState.channelsPlayed === 1 || (isSwitch && AD_CONFIG.channelSwitchAd)) {
         await showAdOverlay(AD_CONFIG.prerollDuration, AD_CONFIG.skipAfter);
+        // Resume video after ad (it may have been paused during the ad overlay)
+        videoEl.play().catch(() => {});
       }
-
-      // Resume playback after ad or immediately
-      videoEl.play().catch(err => {
-        console.warn('Autoplay blocked:', err.message);
-        errorEl.textContent = 'Tap the play button to start.';
-        errorEl.style.display = '';
-      });
 
       startMidrollTimer();
       showCompanionBanner();
