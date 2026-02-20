@@ -569,9 +569,19 @@
 
   async function loadGenreRows() {
     const container = document.getElementById('genre-rows');
-    for (const g of GENRE_ROWS) {
-      const data = await cachedFetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${g.genre}&sort_by=popularity.desc`);
-      if (!data?.results?.length) continue;
+
+    // Performance optimization: Fetch all genres in parallel using Promise.all
+    // This avoids sequential waterfall requests and loads the sections faster.
+    const requests = GENRE_ROWS.map(g =>
+      cachedFetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${g.genre}&sort_by=popularity.desc`)
+    );
+
+    const responses = await Promise.all(requests);
+
+    responses.forEach((data, index) => {
+      if (!data?.results?.length) return;
+
+      const g = GENRE_ROWS[index];
       const section = document.createElement('section');
       section.className = 'row';
       const listId = `genre-${g.genre}`;
@@ -594,7 +604,7 @@
           list.scrollBy({ left: list.clientWidth * 0.75 * dir, behavior: 'smooth' });
         });
       });
-    }
+    });
   }
 
   function lazyLoadGenreRows() {
@@ -620,9 +630,15 @@
       { name: 'New Releases', url: `${BASE_URL}/movie/now_playing?api_key=${API_KEY}`, icon: 'fa-calendar-star' },
     ];
 
-    for (const ex of extras) {
-      const data = await cachedFetch(ex.url);
-      if (!data?.results?.length) continue;
+    // Performance optimization: Fetch all extra categories in parallel using Promise.all
+    // This reduces loading time compared to sequential fetches.
+    const requests = extras.map(ex => cachedFetch(ex.url));
+    const responses = await Promise.all(requests);
+
+    responses.forEach((data, index) => {
+      if (!data?.results?.length) return;
+
+      const ex = extras[index];
       const section = document.createElement('section');
       section.className = 'row';
       const listId = `extra-${ex.name.replace(/\s+/g, '-').toLowerCase()}`;
@@ -645,7 +661,7 @@
           list.scrollBy({ left: list.clientWidth * 0.75 * dir, behavior: 'smooth' });
         });
       });
-    }
+    });
   }
 
   // ==============================
