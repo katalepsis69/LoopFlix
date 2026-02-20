@@ -446,11 +446,9 @@
     liveTVView.style.display = '';
     liveTVView.classList.add('active');
 
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    document.querySelector('.nav-link[data-page="livetv"]')?.classList.add('active');
-
-    const catTabs = document.querySelector('.category-tabs');
-    if (catTabs) catTabs.style.display = 'none';
+    // Update category tab active state
+    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-livetv')?.classList.add('active');
 
     renderCategoryTabs();
     renderChannelGrid();
@@ -463,12 +461,6 @@
     mainContent.style.display = '';
     liveTVView.style.display = 'none';
     liveTVView.classList.remove('active');
-
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    document.querySelector('.nav-link[data-page="home"]')?.classList.add('active');
-
-    const catTabs = document.querySelector('.category-tabs');
-    if (catTabs) catTabs.style.display = '';
   }
 
   // ==============================
@@ -476,14 +468,29 @@
   // ==============================
 
   function bindLiveTVEvents() {
-    document.querySelector('.nav-link[data-page="livetv"]')?.addEventListener('click', (e) => {
+    // Live TV category tab
+    document.getElementById('tab-livetv')?.addEventListener('click', (e) => {
       e.preventDefault();
       openLiveTV();
     });
 
+    // Close Live TV when any other category tab is clicked
+    document.querySelectorAll('.category-tab:not([data-category="livetv"])').forEach(tab => {
+      tab.addEventListener('click', () => {
+        if (document.getElementById('livetv-view')?.classList.contains('active')) {
+          closeLiveTV();
+        }
+      });
+    });
+
+    // Home nav link
     document.querySelector('.nav-link[data-page="home"]')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeLiveTV();
+      if (document.getElementById('livetv-view')?.classList.contains('active')) {
+        e.preventDefault();
+        closeLiveTV();
+        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.category-tab[data-category="all"]')?.classList.add('active');
+      }
     });
 
     document.getElementById('livetv-player-close')?.addEventListener('click', closeLiveTVPlayer);
