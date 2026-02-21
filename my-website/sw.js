@@ -2,13 +2,13 @@
    LoopFlix — Service Worker
    Caches shell assets for offline/installability
    ====================================== */
-const CACHE_NAME = 'loopflix-v1';
+const CACHE_NAME = 'loopflix-v2';
 const SHELL_ASSETS = [
-    '/',
-    '/index.html',
-    '/css/home.css',
-    '/js/home.js',
-    '/manifest.json'
+    './',
+    './index.html',
+    './css/home.css',
+    './js/home.js',
+    './manifest.json'
 ];
 
 // Install: cache shell

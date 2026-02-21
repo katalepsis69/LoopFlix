@@ -104,35 +104,54 @@
                 </span>
             </div>
             <div class="nav-links">
-                <a href="index.html" class="nav-link active" data-page="home">
+                <a href="./" class="nav-link active" data-page="home">
                     <i class="fas fa-home"></i>
                     Home</a>
+                <!-- ARCH-1: Dropdown Navigation -->
+                <div class="nav-dropdown" id="nav-dropdown">
+                    <button class="nav-dropdown-toggle" id="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-compass"></i>
+                        Browse
+                        <i class="fas fa-chevron-down nav-dropdown-arrow"></i>
+                    </button>
+                    <div class="nav-dropdown-menu" id="nav-dropdown-menu" role="menu">
+                        <button class="nav-dropdown-item" data-category="movies" role="menuitem">
+                            <i class="fas fa-film"></i>
+                            Movies</button>
+                        <button class="nav-dropdown-item" data-category="tv" role="menuitem">
+                            <i class="fas fa-tv"></i>
+                            TV Shows</button>
+                        <button class="nav-dropdown-item" data-category="anime" role="menuitem">
+                            <i class="fas fa-dragon"></i>
+                            Anime</button>
+                        <button class="nav-dropdown-item" data-category="livetv" role="menuitem">
+                            <i class="fas fa-tower-broadcast"></i>
+                            Live TV</button>
+                    </div>
+                </div>
                 <div class="search-trigger" id="search-trigger">
                     <i class="fas fa-search"></i>
                     <span>Search...</span>
+                    <kbd class="search-kbd">/</kbd>
                 </div>
+                <!-- FEAT-1: Surprise Me -->
+                <button class="btn-surprise" id="btn-surprise" aria-label="Surprise Me — pick random content">
+                    <i class="fas fa-dice"></i>
+                    <span>Surprise Me</span>
+                </button>
                 <button class="nav-user" id="nav-user" aria-label="User account">
                     <i class="fas fa-user"></i>
                     <span id="nav-username"></span>
                 </button>
             </div>
-            <div class="category-tabs">
-                <button class="category-tab active" data-category="all">All</button>
-                <button class="category-tab" data-category="movies">
-                    <i class="fas fa-film"></i>
-                    Movies</button>
-                <button class="category-tab" data-category="tv">
-                    <i class="fas fa-tv"></i>
-                    TV Shows</button>
-                <button class="category-tab" data-category="anime">
-                    <i class="fas fa-dragon"></i>
-                    Anime</button>
-                <button class="category-tab" data-category="livetv" id="tab-livetv">
-                    <i class="fas fa-tower-broadcast"></i>
-                    Live TV</button>
-            </div>
         </nav>
-        <main id="main-content">
+        <main
+            id="main-content">
+            <!-- ARCH-3: Reusable Filter Component container -->
+            <div class="filter-bar" id="filter-bar" style="display:none">
+                <div class="filter-bar-inner" id="filter-bar-inner"></div>
+            </div>
+
             <section class="banner-carousel" id="banner-carousel" aria-label="Featured content">
                 <div class="carousel-track" id="carousel-track"></div>
                 <button class="carousel-arrow prev" id="carousel-prev" aria-label="Previous">
@@ -143,10 +162,17 @@
                 </button>
                 <div class="carousel-dots" id="carousel-dots"></div>
             </section>
-            <section class="row" id="continue-watching-row" style="display:none">
-                <h2>
-                    <i class="fas fa-history"></i>
-                    Continue Watching</h2>
+            <!-- BUG-2: data-category attributes for robust filtering -->
+            <section class="row" id="continue-watching-row" data-category="shared" style="display:none">
+                <div class="row-header">
+                    <h2>
+                        <i class="fas fa-history"></i>
+                        Continue Watching</h2>
+                    <button class="btn-clear-all" id="btn-clear-continue" title="Clear all">
+                        <i class="fas fa-trash-alt"></i>
+                        Clear All
+                    </button>
+                </div>
                 <div class="list-wrapper">
                     <button class="scroll-btn scroll-left" data-target="continue-list">
                         <i class="fas fa-chevron-left"></i>
@@ -157,7 +183,7 @@
                     </button>
                 </div>
             </section>
-            <section class="row" id="watchlist-row" style="display:none">
+            <section class="row" id="watchlist-row" data-category="shared" style="display:none">
                 <h2>
                     <i class="fas fa-bookmark"></i>
                     My List</h2>
@@ -171,7 +197,7 @@
                     </button>
                 </div>
             </section>
-            <section class="row" aria-label="Trending Movies">
+            <section class="row" id="movies-row" data-category="movies" aria-label="Trending Movies">
                 <h2>
                     <i class="fas fa-fire"></i>
                     Trending Movies</h2>
@@ -196,7 +222,7 @@
                     </button>
                 </div>
             </section>
-            <section class="row" aria-label="Trending TV Shows">
+            <section class="row" id="tvshows-row" data-category="tv" aria-label="Trending TV Shows">
                 <h2>
                     <i class="fas fa-tv"></i>
                     Trending TV Shows</h2>
@@ -221,7 +247,7 @@
                     </button>
                 </div>
             </section>
-            <section class="row" aria-label="Trending Anime">
+            <section class="row" id="anime-row" data-category="anime" aria-label="Trending Anime">
                 <h2>
                     <i class="fas fa-dragon"></i>
                     Trending Anime</h2>
@@ -246,11 +272,19 @@
                     </button>
                 </div>
             </section>
+            <!-- ARCH-4/5/6: Top100 + Filtered content area -->
+            <div id="filtered-content"></div>
             <div id="genre-rows"></div>
-            <section class="row" id="history-row" style="display:none">
-                <h2>
-                    <i class="fas fa-clock-rotate-left"></i>
-                    Recently Watched</h2>
+            <section class="row" id="history-row" data-category="shared" style="display:none">
+                <div class="row-header">
+                    <h2>
+                        <i class="fas fa-clock-rotate-left"></i>
+                        Recently Watched</h2>
+                    <button class="btn-clear-all" id="btn-clear-history" title="Clear all">
+                        <i class="fas fa-trash-alt"></i>
+                        Clear All
+                    </button>
+                </div>
                 <div class="list-wrapper">
                     <button class="scroll-btn scroll-left" data-target="history-list">
                         <i class="fas fa-chevron-left"></i>
@@ -262,6 +296,18 @@
                 </div>
             </section>
         </main>
+        <!-- FEAT-2: Error Boundary Container -->
+        <div class="error-boundary" id="error-boundary" style="display:none">
+            <div class="error-boundary-content">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h2>Something went wrong</h2>
+                <p id="error-boundary-message">Failed to load content. Please check your connection and try again.</p>
+                <button class="btn-play" id="error-boundary-retry">
+                    <i class="fas fa-redo"></i>
+                    Retry
+                </button>
+            </div>
+        </div>
         <div class="explore-view" id="explore-view" aria-hidden="true">
             <div class="explore-hero">
                 <div class="explore-trailer-wrap" id="explore-trailer-wrap">
@@ -381,6 +427,7 @@
                 <p class="auth-error" id="auth-error"></p>
             </div>
         </div>
+        <!-- QOL-5: Anime filter tab added -->
         <div class="search-modal" id="search-modal" role="dialog" aria-modal="true" aria-label="Search">
             <button class="close" id="search-close" aria-label="Close search">
                 <i class="fas fa-times"></i>
@@ -394,6 +441,7 @@
                     <button class="search-tab active" data-filter="all">All</button>
                     <button class="search-tab" data-filter="movie">Movies</button>
                     <button class="search-tab" data-filter="tv">TV Shows</button>
+                    <button class="search-tab" data-filter="anime">Anime</button>
                 </div>
                 <div class="recent-searches" id="recent-searches" style="display:none">
                     <h3>
@@ -418,6 +466,11 @@
                 </h1>
                 <p class="lt-subtitle">Stream live channels — news, sports, movies, kids & more</p>
             </div>
+            <!-- QOL-8: Live TV search input -->
+            <div class="lt-search-wrapper">
+                <i class="fas fa-search lt-search-icon"></i>
+                <input type="text" id="livetv-search" class="lt-search-input" placeholder="Filter channels..." autocomplete="off"/>
+            </div>
             <div class="lt-category-tabs" id="livetv-category-tabs"></div>
             <div class="lt-grid" id="livetv-grid"></div>
         </div>
@@ -431,7 +484,7 @@
                 <span class="lt-player-live">
                     <span class="lt-live-dot"></span>LIVE</span>
             </div>
-            <video id="livetv-video" autoplay controls></video>
+            <video id="livetv-video" autoplay playsinline controls></video>
             <p class="lt-player-error" id="livetv-error" style="display:none"></p>
         </div>
         <footer class="footer">
@@ -460,7 +513,7 @@
         </footer>
         <script>
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js').catch(() => {});
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
             }
         </script>
     </body>

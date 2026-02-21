@@ -97,7 +97,8 @@
     const icon = type === 'error' ? 'fa-exclamation-circle' : type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
     t.innerHTML = `<i class="fas ${icon}"></i> ${escapeHTML(message)}`;
     c.appendChild(t);
-    setTimeout(() => t.remove(), 3200);
+    const duration = type === 'error' ? 6000 : 3200;
+    setTimeout(() => t.remove(), duration);
   }
 
   function showResumeToast(item, savedTime) {
@@ -223,7 +224,8 @@
     const idx = list.findIndex(i => i.id === item.id);
     if (idx >= 0) { list.splice(idx, 1); showToast('Removed from watchlist', 'success'); }
     else {
-      list.push({ id: item.id, title: item.title || item.name, media_type: item.media_type, poster_path: item.poster_path });
+      const mediaType = item.media_type || (item.name && !item.title ? 'tv' : 'movie');
+      list.push({ id: item.id, title: item.title || item.name, media_type: mediaType, poster_path: item.poster_path });
       showToast('Added to watchlist!', 'success');
     }
     localStorage.setItem('lf_watchlist', JSON.stringify(list));
@@ -928,14 +930,16 @@
     if (!currentItem) return;
     const type = currentItem.media_type === 'movie' ? 'movie' : 'tv';
     const url = `${window.location.origin}${window.location.pathname}?type=${type}&id=${currentItem.id}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast('Link copied to clipboard!', 'success');
-    } catch (_) {
-      const i = document.createElement('input'); i.value = url;
-      document.body.appendChild(i); i.select(); document.execCommand('copy');
-      document.body.removeChild(i);
-      showToast('Link copied!', 'success');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Link copied to clipboard!', 'success');
+      } catch (err) {
+        console.warn('Clipboard write failed:', err);
+        showToast('Could not copy link. Please copy manually.', 'error');
+      }
+    } else {
+      showToast('Clipboard not supported in this browser.', 'error');
     }
   }
 
@@ -1069,7 +1073,7 @@
       }, 350));
     }
 
-    // Search filter tabs
+    // Search filter tabs (QOL-5: includes anime)
     document.querySelectorAll('.search-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         searchFilter = tab.dataset.filter;
@@ -1105,7 +1109,7 @@
     document.querySelectorAll('.auth-tab').forEach(t => t.addEventListener('click', () => setAuthTab(t.dataset.tab)));
     document.getElementById('auth-form')?.addEventListener('submit', handleAuthSubmit);
 
-    // Keyboard
+    // QOL-1: Global keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         if (document.getElementById('fullscreen-player').classList.contains('active')) closePlayer();
@@ -1113,24 +1117,92 @@
         else if (document.getElementById('search-modal').classList.contains('active')) closeSearchModal();
         else if (document.getElementById('explore-view').classList.contains('active')) closeExploreView();
       }
+      // Focus search on '/' (not when typing in input/textarea)
+      if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+        e.preventDefault();
+        openSearchModal();
+      }
+      // Ctrl+K to open search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        openSearchModal();
+      }
     });
 
     setupScrollButtons();
     setupBackToTop();
 
-    // Category tabs
-    document.querySelectorAll('.category-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        const cat = tab.dataset.category;
-        document.querySelectorAll('.category-tab').forEach(t => t.classList.toggle('active', t === tab));
-        filterByCategory(cat);
+    // ARCH-1: Dropdown navigation
+    const dropdownToggle = document.getElementById('nav-dropdown-toggle');
+    const dropdownMenu = document.getElementById('nav-dropdown-menu');
+    if (dropdownToggle && dropdownMenu) {
+      dropdownToggle.addEventListener('click', () => {
+        const open = dropdownMenu.classList.toggle('open');
+        dropdownToggle.setAttribute('aria-expanded', open);
       });
+      // Close on outside click
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.nav-dropdown')) {
+          dropdownMenu.classList.remove('open');
+          dropdownToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+      // Dropdown items
+      document.querySelectorAll('.nav-dropdown-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const cat = item.dataset.category;
+          dropdownMenu.classList.remove('open');
+          dropdownToggle.setAttribute('aria-expanded', 'false');
+          filterByCategory(cat);
+        });
+      });
+    }
+
+    // Home nav link
+    document.querySelector('.nav-link[data-page="home"]')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      filterByCategory('all');
+    });
+
+    // QOL-2: Clear All buttons
+    document.getElementById('btn-clear-history')?.addEventListener('click', () => {
+      localStorage.removeItem('lf_history');
+      displayHistoryRow();
+      showToast('Watch history cleared', 'success');
+    });
+    document.getElementById('btn-clear-continue')?.addEventListener('click', () => {
+      localStorage.removeItem('lf_progress');
+      displayContinueWatching();
+      showToast('Continue watching cleared', 'success');
+    });
+
+    // FEAT-1: Surprise Me
+    document.getElementById('btn-surprise')?.addEventListener('click', surpriseMe);
+
+    // FEAT-2: Error boundary retry
+    document.getElementById('error-boundary-retry')?.addEventListener('click', () => {
+      document.getElementById('error-boundary').style.display = 'none';
+      init();
     });
 
     // Data export/import
     document.getElementById('btn-export')?.addEventListener('click', exportUserData);
     document.getElementById('btn-import')?.addEventListener('click', () => document.getElementById('import-file')?.click());
     document.getElementById('import-file')?.addEventListener('change', importUserData);
+
+    // QOL-4: Pause carousel when tab is hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        clearInterval(carouselTimer);
+      } else {
+        if (carouselItems.length && !document.getElementById('explore-view').classList.contains('active')) {
+          startCarouselTimer();
+        }
+      }
+    });
+
+    // QOL-7: Touch swipe for carousel
+    setupCarouselSwipe();
   }
 
   // ==============================
@@ -1138,29 +1210,44 @@
   // ==============================
 
   function filterByCategory(category) {
-    const rows = document.querySelectorAll('main .row');
-    const movieLabels = ['Trending Movies', 'Popular This Week', 'Top Rated All Time', 'New Releases', 'Action', 'Comedy', 'Sci-Fi', 'Horror'];
-    const tvLabels = ['Trending TV Shows'];
-    const animeLabels = ['Trending Anime'];
-    const sharedLabels = ['Continue Watching', 'My List', 'Recently Watched'];
+    const rows = document.querySelectorAll('main .row[data-category]');
+    const genreRows = document.getElementById('genre-rows');
+    const filteredContent = document.getElementById('filtered-content');
 
     rows.forEach(row => {
-      const heading = row.querySelector('h2')?.textContent?.trim() || '';
+      const cat = row.dataset.category;
       if (category === 'all') {
         row.style.display = '';
-        return;
-      }
-      const isShared = sharedLabels.some(l => heading.includes(l));
-      if (isShared) { row.style.display = ''; return; }
-
-      if (category === 'movies') {
-        row.style.display = movieLabels.some(l => heading.includes(l)) ? '' : 'none';
-      } else if (category === 'tv') {
-        row.style.display = tvLabels.some(l => heading.includes(l)) ? '' : 'none';
-      } else if (category === 'anime') {
-        row.style.display = animeLabels.some(l => heading.includes(l)) ? '' : 'none';
+      } else if (cat === 'shared') {
+        row.style.display = '';
+      } else {
+        row.style.display = (cat === category) ? '' : 'none';
       }
     });
+
+    // Genre rows only show on 'all' or 'movies'
+    if (genreRows) {
+      genreRows.style.display = (category === 'all' || category === 'movies') ? '' : 'none';
+    }
+
+    // Show filtered-content area for category pages
+    if (filteredContent) {
+      filteredContent.style.display = (category === 'all') ? 'none' : '';
+    }
+
+    // Update active state in dropdown
+    document.querySelectorAll('.nav-dropdown-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.category === category);
+    });
+
+    // ARCH-2: Update URL without reload
+    if (category !== 'all') {
+      const routeMap = { movies: '/movies', tv: '/tv-shows', anime: '/anime', livetv: '/live-tv' };
+      const path = routeMap[category] || '/';
+      history.pushState({ category }, '', path);
+    } else {
+      history.pushState({ category: 'all' }, '', window.location.pathname.includes('/') ? './' : './');
+    }
   }
 
   // ==============================
@@ -1210,6 +1297,232 @@
   }
 
   // ==============================
+  //  QOL-3: Enhanced Episode Tracking
+  // ==============================
+
+  function saveEpisodeProgress(tvId, season, episode) {
+    try {
+      const data = JSON.parse(localStorage.getItem('lf_ep_progress') || '{}');
+      data[tvId] = { season_number: season, episode_number: episode, ts: Date.now() };
+      localStorage.setItem('lf_ep_progress', JSON.stringify(data));
+    } catch (_) {}
+  }
+
+  function getEpisodeProgress(tvId) {
+    try {
+      return JSON.parse(localStorage.getItem('lf_ep_progress') || '{}')[tvId] || null;
+    } catch (_) { return null; }
+  }
+
+  // ==============================
+  //  QOL-5: Anime Search Filter
+  // ==============================
+
+  // Override renderSearchResults to support anime filter
+  const _origRenderSearch = renderSearchResults;
+  renderSearchResults = function() {
+    const container = document.getElementById('search-results');
+    container.innerHTML = '';
+    let filtered = lastSearchResults;
+    if (searchFilter === 'movie') filtered = filtered.filter(i => i.media_type === 'movie');
+    else if (searchFilter === 'tv') filtered = filtered.filter(i => i.media_type === 'tv');
+    else if (searchFilter === 'anime') filtered = filtered.filter(i => i.media_type === 'tv' && (i.genre_ids || []).includes(16));
+    if (!filtered.length) {
+      container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px 0;">No results found.</p>';
+      return;
+    }
+    filtered.forEach(item => {
+      container.appendChild(createCard(item, () => { closeSearchModal(); openExploreView(item); }, { showRating: true }));
+    });
+  };
+
+  // ==============================
+  //  QOL-7: Touch Swipe for Carousel
+  // ==============================
+
+  function setupCarouselSwipe() {
+    const track = document.getElementById('carousel-track');
+    if (!track) return;
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const minSwipe = 50;
+
+    track.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    track.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > minSwipe) {
+        if (diff > 0) nextSlide();
+        else prevSlide();
+      }
+    }, { passive: true });
+  }
+
+  // ==============================
+  //  FEAT-1: Surprise Me
+  // ==============================
+
+  let allLoadedItems = [];
+
+  function surpriseMe() {
+    if (!allLoadedItems.length) {
+      showToast('No content loaded yet. Try again shortly.', 'error');
+      return;
+    }
+    const randomItem = allLoadedItems[Math.floor(Math.random() * allLoadedItems.length)];
+    openExploreView(randomItem);
+  }
+
+  // ==============================
+  //  FEAT-2: API Error Boundary
+  // ==============================
+
+  function showErrorBoundary(message) {
+    const eb = document.getElementById('error-boundary');
+    if (!eb) return;
+    document.getElementById('error-boundary-message').textContent = message || 'Failed to load content. Please check your connection and try again.';
+    eb.style.display = 'flex';
+    document.getElementById('main-content').style.display = 'none';
+  }
+
+  // ==============================
+  //  FEAT-3: LRU Cache for sessionStorage
+  // ==============================
+
+  const LRU_ORDER_KEY = 'lfc_lru_order';
+  const LRU_MAX_ENTRIES = 80;
+
+  function lruGet(key) {
+    try {
+      const stored = sessionStorage.getItem(key);
+      if (!stored) return null;
+      const { d, t } = JSON.parse(stored);
+      if (Date.now() - t < CACHE_TTL) {
+        lruTouch(key);
+        return d;
+      }
+      sessionStorage.removeItem(key);
+      lruRemoveKey(key);
+      return null;
+    } catch (_) { return null; }
+  }
+
+  function lruSet(key, data) {
+    const value = JSON.stringify({ d: data, t: Date.now() });
+    try {
+      sessionStorage.setItem(key, value);
+      lruTouch(key);
+    } catch (e) {
+      // QuotaExceededError — evict oldest entries
+      if (e.name === 'QuotaExceededError' || e.code === 22) {
+        lruEvict(5);
+        try { sessionStorage.setItem(key, value); lruTouch(key); } catch (_) {}
+      }
+    }
+  }
+
+  function lruTouch(key) {
+    try {
+      let order = JSON.parse(sessionStorage.getItem(LRU_ORDER_KEY) || '[]');
+      order = order.filter(k => k !== key);
+      order.push(key);
+      if (order.length > LRU_MAX_ENTRIES) {
+        const evictKeys = order.splice(0, order.length - LRU_MAX_ENTRIES);
+        evictKeys.forEach(k => sessionStorage.removeItem(k));
+      }
+      sessionStorage.setItem(LRU_ORDER_KEY, JSON.stringify(order));
+    } catch (_) {}
+  }
+
+  function lruRemoveKey(key) {
+    try {
+      let order = JSON.parse(sessionStorage.getItem(LRU_ORDER_KEY) || '[]');
+      order = order.filter(k => k !== key);
+      sessionStorage.setItem(LRU_ORDER_KEY, JSON.stringify(order));
+    } catch (_) {}
+  }
+
+  function lruEvict(count) {
+    try {
+      let order = JSON.parse(sessionStorage.getItem(LRU_ORDER_KEY) || '[]');
+      const evictKeys = order.splice(0, count);
+      evictKeys.forEach(k => sessionStorage.removeItem(k));
+      sessionStorage.setItem(LRU_ORDER_KEY, JSON.stringify(order));
+    } catch (_) {}
+  }
+
+  // ==============================
+  //  ARCH-3: Reusable Filter Component
+  // ==============================
+
+  const FILTER_OPTIONS = [
+    { id: 'trending', label: 'Trending', icon: 'fa-fire' },
+    { id: 'new_releases', label: 'New Releases', icon: 'fa-calendar-star' },
+    { id: 'top_rated', label: 'Top Rated', icon: 'fa-trophy' },
+    { id: 'popular', label: 'Popular', icon: 'fa-chart-line' },
+    { id: 'genre', label: 'Genre', icon: 'fa-masks-theater' },
+  ];
+  let activeFilter = 'trending';
+
+  function renderFilterBar(onFilterChange) {
+    const bar = document.getElementById('filter-bar');
+    const inner = document.getElementById('filter-bar-inner');
+    if (!bar || !inner) return;
+    bar.style.display = '';
+    inner.innerHTML = '';
+    FILTER_OPTIONS.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-pill' + (opt.id === activeFilter ? ' active' : '');
+      btn.innerHTML = `<i class="fas ${opt.icon}"></i> ${opt.label}`;
+      btn.addEventListener('click', () => {
+        activeFilter = opt.id;
+        inner.querySelectorAll('.filter-pill').forEach(b => b.classList.toggle('active', b === btn));
+        if (onFilterChange) onFilterChange(opt.id);
+      });
+      inner.appendChild(btn);
+    });
+  }
+
+  // ==============================
+  //  ARCH-4: Pagination (Top 100)
+  // ==============================
+
+  async function fetchTop100(type) {
+    const pages = [];
+    const endpoint = type === 'movie' ? 'movie' : 'tv';
+    for (let page = 1; page <= 5; page++) {
+      const data = await rateLimitedFetch(`${BASE_URL}/${endpoint}/popular?api_key=${API_KEY}&page=${page}`);
+      if (data?.results) pages.push(...data.results.map(i => ({ ...i, media_type: type === 'movie' ? 'movie' : 'tv' })));
+    }
+    return pages.slice(0, 100);
+  }
+
+  async function fetchTop100Anime() {
+    const pages = [];
+    for (let page = 1; page <= 5; page++) {
+      const data = await rateLimitedFetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=${page}`);
+      if (data?.results) pages.push(...data.results.map(i => ({ ...i, media_type: 'tv' })));
+    }
+    return pages.slice(0, 100);
+  }
+
+  // ==============================
+  //  ARCH-2: SPA Route Handler
+  // ==============================
+
+  function handleRoute() {
+    const path = window.location.pathname;
+    const routeToCategory = { '/movies': 'movies', '/tv-shows': 'tv', '/anime': 'anime', '/live-tv': 'livetv' };
+    const category = routeToCategory[path];
+    if (category) {
+      filterByCategory(category);
+    }
+  }
+
+  // ==============================
   //  Init
   // ==============================
 
@@ -1227,17 +1540,33 @@
     if (!navigator.onLine) document.getElementById('offline-bar')?.classList.add('visible');
 
     // Genres first
-    genreMap = await fetchGenres();
+    try {
+      genreMap = await fetchGenres();
+    } catch (err) {
+      showErrorBoundary('Failed to load genre data. Please check your connection.');
+      hideSplash();
+      return;
+    }
 
     // Check URL for deep link
     checkUrlParams();
 
     // Fetch trending concurrently
-    const [movies, tvShows, anime] = await Promise.all([
-      fetchTrending('movie'),
-      fetchTrending('tv'),
-      fetchTrendingAnime()
-    ]);
+    let movies, tvShows, anime;
+    try {
+      [movies, tvShows, anime] = await Promise.all([
+        fetchTrending('movie'),
+        fetchTrending('tv'),
+        fetchTrendingAnime()
+      ]);
+    } catch (err) {
+      showErrorBoundary('Failed to load trending content.');
+      hideSplash();
+      return;
+    }
+
+    // FEAT-1: Store all loaded items for Surprise Me
+    allLoadedItems = [...(movies || []), ...(tvShows || []), ...(anime || [])].filter(i => i.poster_path);
 
     buildCarousel(movies);
     displayContinueWatching();
@@ -1247,15 +1576,56 @@
     displayList(anime, 'anime-list');
     displayHistoryRow();
 
+    // ARCH-3: Render filter bar (hidden by default on "all" view)
+    renderFilterBar((filter) => {
+      showToast(`Loading ${filter.replace('_', ' ')}...`);
+    });
+
     // Hide splash screen
     hideSplash();
 
     // Load extra rows + genre rows lazily in background
     loadExtraRows();
     lazyLoadGenreRows();
+
+    // ARCH-2: Handle SPA routes
+    handleRoute();
   }
+
+  // QOL-3: Update playEpisode to track season/episode progress
+  const _origPlayEpisode = playEpisode;
+  playEpisode = function(tvId, season, episode) {
+    saveEpisodeProgress(tvId, season, episode);
+    _origPlayEpisode(tvId, season, episode);
+  };
+
+  // ARCH-2: Handle popstate for SPA routing
+  window.addEventListener('popstate', (e) => {
+    if (e.state?.category) {
+      filterByCategory(e.state.category);
+    } else if (e.state?.type && e.state?.id) {
+      cachedFetch(`${BASE_URL}/${e.state.type}/${e.state.id}?api_key=${API_KEY}`).then(data => {
+        if (data) { data.media_type = e.state.type; openExploreView(data, false); }
+      });
+    } else {
+      if (document.getElementById('explore-view').classList.contains('active')) closeExploreView(false);
+      filterByCategory('all');
+    }
+  });
+
+  // Upgrade cachedFetch to use LRU
+  const _origCachedFetch = cachedFetch;
+  cachedFetch = async function(url) {
+    const key = 'lfc_' + url;
+    const cached = lruGet(key);
+    if (cached) return cached;
+    const data = await safeFetch(url);
+    if (data) lruSet(key, data);
+    return data;
+  };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 
 })();
+

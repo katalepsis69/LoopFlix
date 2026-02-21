@@ -11,6 +11,7 @@
   let currentFilter = 'all';
   let shakaPlayer = null;
   let currentChannel = null;
+  let liveTVSearchQuery = '';
 
   // ==============================
   //  Ad Configuration
@@ -306,7 +307,12 @@
     const grid = document.getElementById('livetv-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    const filtered = currentFilter === 'all' ? channels : channels.filter(c => c.category === currentFilter);
+    let filtered = currentFilter === 'all' ? channels : channels.filter(c => c.category === currentFilter);
+    // QOL-8: Apply search filter
+    if (liveTVSearchQuery) {
+      const q = liveTVSearchQuery.toLowerCase();
+      filtered = filtered.filter(c => c.title.toLowerCase().includes(q));
+    }
     if (!filtered.length) {
       grid.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px;grid-column:1/-1;">No channels found.</p>';
       return;
@@ -468,15 +474,17 @@
   // ==============================
 
   function bindLiveTVEvents() {
-    // Live TV category tab
-    document.getElementById('tab-livetv')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      openLiveTV();
+    // Live TV category tab in dropdown
+    document.querySelectorAll('.nav-dropdown-item[data-category="livetv"]').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        openLiveTV();
+      });
     });
 
-    // Close Live TV when any other category tab is clicked
-    document.querySelectorAll('.category-tab:not([data-category="livetv"])').forEach(tab => {
-      tab.addEventListener('click', () => {
+    // Close Live TV when any other dropdown item is clicked
+    document.querySelectorAll('.nav-dropdown-item:not([data-category="livetv"])').forEach(item => {
+      item.addEventListener('click', () => {
         if (document.getElementById('livetv-view')?.classList.contains('active')) {
           closeLiveTV();
         }
@@ -488,8 +496,6 @@
       if (document.getElementById('livetv-view')?.classList.contains('active')) {
         e.preventDefault();
         closeLiveTV();
-        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
-        document.querySelector('.category-tab[data-category="all"]')?.classList.add('active');
       }
     });
 
@@ -503,6 +509,15 @@
 
     // Pause-roll listeners
     setupPauseRollListeners();
+
+    // QOL-8: Live TV search input
+    const searchInput = document.getElementById('livetv-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        liveTVSearchQuery = searchInput.value.trim();
+        renderChannelGrid();
+      });
+    }
   }
 
   // ==============================
