@@ -28,7 +28,6 @@ import { useState, useEffect } from "react";
 import type { MediaItem } from "@/lib/tmdb/types";
 
 interface HomeClientProps {
-  heroItems: MediaItem[];
   nowPlaying: MediaItem[];
   upcoming: MediaItem[];
   topRatedMovies: MediaItem[];
@@ -37,7 +36,6 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({
-  heroItems,
   nowPlaying,
   upcoming,
   topRatedMovies,
@@ -90,7 +88,7 @@ export default function HomeClient({
         <Navbar />
 
         <main className="relative z-10">
-          <Hero heroItems={heroItems} />
+          <Hero />
 
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
             <div className="hline-dim" />
