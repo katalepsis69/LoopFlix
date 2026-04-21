@@ -90,7 +90,7 @@ export default function HomeClient({
         <Navbar />
 
         <main className="relative z-10">
-          <Hero heroItems={heroItems} />
+          <Hero />
 
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
             <div className="hline-dim" />
