@@ -428,7 +428,7 @@ export default function CatalogClient({ initialData }: { initialData: CatalogIni
                     </div>
                     <div className="text-[10px] text-[#444444] font-mono">
                       {item.year || "—"}{" "}
-                      {item.genres?.[0] ? COMBINED_GENRE_MAP[item.genres[0]] || "" : ""}
+                      {item.genreIds?.[0] ? COMBINED_GENRE_MAP[item.genreIds[0]] || "" : ""}
                     </div>
                   </motion.button>
                 ))}
