@@ -26,14 +26,7 @@ async function getHomeData() {
       getTopRatedTv().catch(() => ({ results: [] as any[] })),
     ]);
 
-  // Combine and sort trending for hero slideshow
-  const heroItems: MediaItem[] = [
-    ...trendingMovies.results.slice(0, 5).map(movieToMediaItem),
-    ...trendingTv.results.slice(0, 3).map(tvToMediaItem),
-  ].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-
   return {
-    heroItems,
     nowPlaying: nowPlaying.results.slice(0, 20).map(movieToMediaItem),
     upcoming: upcoming.results.slice(0, 20).map(movieToMediaItem),
     topRatedMovies: topRatedMovies.results.slice(0, 20).map(movieToMediaItem),

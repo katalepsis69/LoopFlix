@@ -28,7 +28,6 @@ import { useState, useEffect } from "react";
 import type { MediaItem } from "@/lib/tmdb/types";
 
 interface HomeClientProps {
-  heroItems: MediaItem[];
   nowPlaying: MediaItem[];
   upcoming: MediaItem[];
   topRatedMovies: MediaItem[];
@@ -37,7 +36,6 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({
-  heroItems,
   nowPlaying,
   upcoming,
   topRatedMovies,
